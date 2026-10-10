@@ -5,7 +5,7 @@
 # ///
 """Graphics for a mod without AI image generation: recolour or compose base-game sprites, or render a Blender model.
 
-  tint    recolour a base-game PNG (multiply, like the in-game `tint` field)
+  tint    recolour a base-game PNG (multiplies the colour channels)
   icon    composite a 64px icon from a base icon plus a badge overlay
   render  headless Blender: model (or .blend) -> N directions x M frames -> sheet + shadow sheet + Lua snippet
 
@@ -17,6 +17,7 @@ For an entity, the prototype `tint` field on a base-game sprite is usually bette
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import os
 import re
@@ -34,7 +35,8 @@ from _lib.errors import ToolkitError, cli_main
 # Sprite limits, Factorio 2.1.21 prototype docs (https://lua-api.factorio.com/2.1.21/):
 #   one frame/sprite: width and height 0-4096 px  (types/SpriteSource.html#width, types/AnimationParameters.html#width)
 #   one input file:   8192 px wide                (types/AnimationParameters.html#line_length)
-# The docs state no height limit for a file; MAX_SHEET_SIDE is applied to it too (conservative choice, not a documented fact).
+# The docs state no height limit for a file (the 0.17.0 changelog names a 'spritesheet' limit without an axis);
+# MAX_SHEET_SIDE is applied to the height too as a conservative choice, not a documented fact.
 MAX_FRAME_SIDE = 4096
 MAX_SHEET_SIDE = 8192
 
@@ -159,7 +161,7 @@ def plan_layout(frame_w: int, frame_h: int, frames: int, directions: int) -> Lay
     if max(frame_w, frame_h) > MAX_FRAME_SIDE:
         raise ToolkitError(
             f"a {frame_w}x{frame_h} px frame exceeds Factorio's {MAX_FRAME_SIDE}px limit per sprite or frame.",
-            "lower --frame-size or raise --px-per-tile's scale (see references/graphics-ladder.md, Limits).",
+            "lower --frame-size (see references/graphics-ladder.md, Limits).",
         )
     columns = min(frames, MAX_SHEET_SIDE // frame_w)
     layout = Layout(frame_w, frame_h, frames, directions, columns)
@@ -188,23 +190,9 @@ def _opaque_bbox(image: Image.Image) -> tuple[int, int, int, int] | None:
     return image.getchannel("A").point(lambda a: 255 if a >= ALPHA_THRESHOLD else 0).getbbox()
 
 
-def ground_row(frames: Sequence[Sequence[Image.Image]]) -> int:
-    """Lowest opaque pixel row over all frames: where the model touches the ground on screen."""
-    bottoms = [box[3] - 1 for row in frames for f in row if (box := _opaque_bbox(f))]
-    if not bottoms:
-        raise ToolkitError("the render is empty: nothing was drawn in any frame.", "check that build() creates visible geometry in front of the camera.")
-    return max(bottoms)
-
-
-def make_shadow(frame: Image.Image, ground_y: int, dx: float, dy: float) -> Image.Image:
-    """Black silhouette flattened onto the ground and cast right (`dx`) and down (`dy`), per pixel of height above `ground_y`."""
-    if dy <= 0:
-        raise ToolkitError("--shadow-y must be greater than 0.", "the shadow is cast toward the bottom-right; use e.g. 0.25.")
-    # inverse of (x, y) -> (x + dx * h, ground_y + dy * h) with h = ground_y - y, as PIL's output -> input affine map
-    coefficients = (1.0, -dx / dy, dx * ground_y / dy, 0.0, -1.0 / dy, ground_y + ground_y / dy)
-    alpha = frame.getchannel("A").transform(frame.size, Image.Transform.AFFINE, coefficients, resample=Image.Resampling.BILINEAR)
-    black = Image.new("L", frame.size, 0)
-    return Image.merge("RGBA", (black, black, black, alpha))
+def require_drawn(frames: Sequence[Sequence[Image.Image]]) -> None:
+    if not any(_opaque_bbox(f) for row in frames for f in row):
+        raise ToolkitError("the render is empty: nothing was drawn in any frame.", "check that build() creates visible geometry on the ground plane in front of the camera.")
 
 
 def alpha_centroid(frames: Sequence[Sequence[Image.Image]]) -> tuple[float, float]:
@@ -296,8 +284,6 @@ def find_blender(env: Mapping[str, str] | None = None) -> Path:
 
 def run_blender(blender: Path, params: Mapping[str, object], work: Path, timeout: float) -> dict[str, object]:
     """Run `blender_scene.py` headless once for the whole job; return its result.json."""
-    import json
-
     work.mkdir(parents=True, exist_ok=True)
     params_file = work / "params.json"
     params_file.write_text(json.dumps({**params, "out_dir": str(work)}), "utf-8")
@@ -319,6 +305,11 @@ def run_blender(blender: Path, params: Mapping[str, object], work: Path, timeout
 
 
 # --- subcommands ---------------------------------------------------------------------------------------------------------
+
+def load_frames(directory: Path, prefix: str, directions: int, frames: int) -> list[list[Image.Image]]:
+    """Read Blender's `<prefix><direction>_f<frame>.png` files into memory (the temp folder is deleted afterwards)."""
+    return [[Image.open(directory / f"{prefix}{d}_f{f}.png").convert("RGBA") for f in range(frames)] for d in range(directions)]
+
 
 def _open_png(path: Path) -> Image.Image:
     if not path.is_file():
@@ -362,6 +353,8 @@ def cmd_render(args: argparse.Namespace) -> int:
         raise ToolkitError(f"{source} does not exist.", "check the path.")
     if args.save_blend and not args.model:
         raise ToolkitError("--save-blend saves a model built by --model; there is nothing to save with --blend.", "drop --save-blend.")
+    if not args.no_shadow and (args.shadow_x <= 0 or args.shadow_y <= 0):
+        raise ToolkitError("--shadow-x and --shadow-y must be greater than 0.", "the shadow is cast toward the bottom-right; use e.g. 0.4 and 0.15, or --no-shadow.")
     layout = plan_layout(args.frame_size, args.frame_size, args.frames, args.directions)  # refuse oversize jobs before the 10 s Blender start
     blender = find_blender()
     params = {
@@ -370,19 +363,19 @@ def cmd_render(args: argparse.Namespace) -> int:
         "save_blend": str(args.save_blend.resolve()) if args.save_blend else None,
         "directions": args.directions, "frames": args.frames, "frame_px": args.frame_size,
         "px_per_tile": args.px_per_tile, "elevation_deg": args.elevation, "center_z": args.center_z,
+        "shadow_reach": None if args.no_shadow else [args.shadow_x, -args.shadow_y],  # world +y is up-screen, so down is negative
     }
     if args.save_blend:
         args.save_blend.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="fm-render-") as tmp:
         info = run_blender(blender, params, Path(tmp), args.timeout)
-        main_frames = [[Image.open(Path(tmp) / f"d{d}_f{f}.png").convert("RGBA") for f in range(args.frames)] for d in range(args.directions)]
-        for row in main_frames:
-            for frame in row:
-                frame.load()
+        main_frames = load_frames(Path(tmp), "d", args.directions, args.frames)
+        shadow_frames = [] if args.no_shadow else load_frames(Path(tmp), "s", args.directions, args.frames)
     scale = TILE_PX_AT_SCALE_1 / args.px_per_tile
     center_z = float(info["center_z"])  # type: ignore[arg-type]
     shift = (0.0, -center_z * math.cos(math.radians(args.elevation)))  # ground point under the entity sits this far below frame centre
 
+    require_drawn(main_frames)
     out_main = args.out / f"{args.name}.png"
     _save(pack_sheet(main_frames, layout), out_main)
     lines = [f"frame {layout.frame_w}x{layout.frame_h} px; {args.directions} direction(s) x {args.frames} frame(s)",
@@ -391,8 +384,6 @@ def cmd_render(args: argparse.Namespace) -> int:
              f"main sheet: {out_main}"]
     shadow_file: str | None = None
     if not args.no_shadow:
-        ground = ground_row(main_frames)
-        shadow_frames = [[make_shadow(f, ground, args.shadow_x, args.shadow_y) for f in row] for row in main_frames]
         out_shadow = args.out / f"{args.name}-shadow.png"
         _save(pack_sheet(shadow_frames, layout), out_shadow)
         shadow_file = f"__{args.mod_name}__/{args.lua_dir}/{out_shadow.name}"
@@ -446,8 +437,8 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("--px-per-tile", type=int, default=64, help="render resolution; 64 matches base-game 2.x sprites at scale 0.5 (default: %(default)s)")
     render.add_argument("--elevation", type=float, default=60.0, help="camera angle above the horizon in degrees (default: %(default)s)")
     render.add_argument("--center-z", type=float, help="world height the camera looks at (default: half the model height)")
-    render.add_argument("--shadow-x", type=float, default=0.4, help="shadow reach to the right per px of height (default: %(default)s)")
-    render.add_argument("--shadow-y", type=float, default=0.15, help="shadow reach downward per px of height (default: %(default)s)")
+    render.add_argument("--shadow-x", type=float, default=0.4, help="shadow reach to the right, in tiles per tile of height (default: %(default)s)")
+    render.add_argument("--shadow-y", type=float, default=0.15, help="shadow reach down the screen, in tiles per tile of height (default: %(default)s)")
     render.add_argument("--no-shadow", action="store_true", help="skip the shadow sheet")
     render.add_argument("--animation-speed", type=float, default=0.5, help="animation_speed written to the Lua (default: %(default)s)")
     render.add_argument("--timeout", type=float, default=600, help="seconds to wait for Blender (default: %(default)s)")

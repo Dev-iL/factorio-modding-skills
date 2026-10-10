@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from PIL import Image
+from PIL import Image, ImageChops
 
 import sprites
 from _lib.errors import ToolkitError
@@ -160,39 +160,19 @@ def test_pack_sheet_rejects_wrong_frame_size() -> None:
         sprites.pack_sheet([[solid((5, 4), (0, 0, 0, 255))]], sprites.plan_layout(4, 4, 1, 1))
 
 
-# --- shadow -----------------------------------------------------------------------------------------------------------
+# --- frame checks -----------------------------------------------------------------------------------------------------
 
-def tall_block() -> Image.Image:
-    frame = Image.new("RGBA", (100, 100))
-    frame.paste(solid((10, 40), (200, 50, 50, 255)), (20, 50))  # a 10x40 wall standing with its foot at row 89
-    return frame
-
-
-def test_shadow_is_black_and_lies_right_and_below_the_model() -> None:
-    frames = [[tall_block()]]
-    shadow = [[sprites.make_shadow(tall_block(), sprites.ground_row(frames), 0.5, 0.25)]]
-    assert shadow[0][0].getpixel((50, 95))[:3] == (0, 0, 0)
-    (mx, my), (sx, sy) = sprites.alpha_centroid(frames), sprites.alpha_centroid(shadow)
-    assert sx > mx and sy > my
-    assert sprites.clipped_frames(shadow) == []
-
-
-def test_shadow_reach_follows_height() -> None:
-    ground = sprites.ground_row([[tall_block()]])
-    box = sprites.make_shadow(tall_block(), ground, 0.5, 0.25).getchannel("A").point(lambda a: 255 if a > 128 else 0).getbbox()
-    assert box is not None
-    assert box[3] - ground == pytest.approx(0.25 * 40, abs=2)  # 40 px tall wall -> 10 px of shadow below its foot
-    assert box[2] - 30 == pytest.approx(0.5 * 40, abs=2)  # and 20 px to the right of the wall's right edge
-
-
-def test_shadow_y_must_be_positive() -> None:
-    with pytest.raises(ToolkitError, match="--shadow-y"):
-        sprites.make_shadow(tall_block(), 89, 0.5, 0)
+def test_shadow_centroid_is_measured_in_pixels_from_top_left() -> None:
+    left, right = Image.new("RGBA", (10, 10)), Image.new("RGBA", (10, 10))
+    left.paste(solid((2, 2), (0, 0, 0, 255)), (0, 0))
+    right.paste(solid((2, 2), (0, 0, 0, 255)), (6, 4))
+    (lx, ly), (rx, ry) = sprites.alpha_centroid([[left]]), sprites.alpha_centroid([[right]])
+    assert (rx - lx, ry - ly) == pytest.approx((6, 4))
 
 
 def test_empty_render_is_reported() -> None:
     with pytest.raises(ToolkitError, match="render is empty"):
-        sprites.ground_row([[Image.new("RGBA", (8, 8))]])
+        sprites.require_drawn([[Image.new("RGBA", (8, 8))]])
 
 
 def test_clipped_frames_flags_content_on_the_edge() -> None:
@@ -299,6 +279,14 @@ def test_render_refuses_oversize_job_before_starting_blender(tmp_path: Path, mon
         sprites.main(render_args(tmp_path, "--model", str(model), "--frames", "80", "--frame-size", "512"))
 
 
+@pytest.mark.parametrize("flag", ["--shadow-x", "--shadow-y"])
+def test_shadow_must_point_bottom_right(tmp_path: Path, flag: str) -> None:
+    model = tmp_path / "m.py"
+    model.write_text("")
+    with pytest.raises(ToolkitError, match="must be greater than 0"):
+        sprites.main(render_args(tmp_path, "--model", str(model), flag, "-0.2"))
+
+
 def test_save_blend_requires_a_model(tmp_path: Path) -> None:
     blend = tmp_path / "a.blend"
     blend.write_text("")
@@ -321,7 +309,11 @@ def test_render_model_then_rerender_saved_blend(tmp_path: Path, capsys: pytest.C
     assert Image.open(first / "box-shadow.png").size == sheet.size
     lua = (first / "box.lua").read_text("utf-8")
     assert "frame_count = 2" in lua and "draw_as_shadow = true" in lua
-    assert "shadow centroid vs model: +" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "shadow centroid vs model: +" in out and "px right, +" in out  # right of and below the model
+    shadow = Image.open(first / "box-shadow.png")
+    alpha, red = shadow.getchannel("A"), shadow.getchannel("R")
+    assert alpha.getextrema()[1] > 200 and ImageChops.multiply(red, alpha.point(lambda a: 255 if a else 0)).getextrema() == (0, 0)  # solid black
 
     assert sprites.main(["render", "--name", "box", "--out", str(second), "--blend", str(saved), *common]) == 0
     assert Image.open(second / "box.png").tobytes() == sheet.tobytes()  # the saved model replays the same pictures

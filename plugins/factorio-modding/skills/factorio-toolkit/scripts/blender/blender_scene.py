@@ -11,7 +11,10 @@ Rung 3 opens a .blend as-is: the pipeline replaces its cameras and lights and sa
 
 Direction d rotates the model about z by -360/N * d degrees (clockwise from above), so north, east, south,
 west for N=4. The camera and lighting never move, so shading and the shadow stay consistent between directions.
-Output: d{direction}_f{frame}.png (RGBA, transparent background) plus result.json in the output directory.
+Shadow: a second pass draws every mesh flattened onto the ground along a fixed light direction (a point at height z
+moves by (reach_x * z, reach_y * z) on the ground), in solid black, from the same camera.
+Output: d{direction}_f{frame}.png and s{direction}_f{frame}.png (shadow), RGBA with a transparent background, plus
+result.json in the output directory.
 """
 
 import json
@@ -21,7 +24,7 @@ import runpy
 import sys
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 CAMERA_DISTANCE = 40.0
 
@@ -107,6 +110,37 @@ def configure_render(scene, frame_px):
     shading.show_cavity = False
 
 
+def render_shadow(scene, reach, path):
+    """Render the ground projection of the posed model as a black silhouette."""
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    flatten = Matrix(((1, 0, reach[0], 0), (0, 1, reach[1], 0), (0, 0, 0, 0), (0, 0, 0, 1)))
+    black = bpy.data.materials.new("fms_shadow")
+    black.diffuse_color = (0.0, 0.0, 0.0, 1.0)
+    originals = [o for o in scene.objects if o.type == "MESH"]
+    shadows = []
+    for obj in originals:
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = bpy.data.meshes.new_from_object(evaluated)
+        mesh.transform(flatten @ evaluated.matrix_world)
+        mesh.materials.clear()
+        mesh.materials.append(black)
+        shadow = bpy.data.objects.new("fms_shadow_" + obj.name, mesh)
+        scene.collection.objects.link(shadow)
+        shadows.append(shadow)
+        obj.hide_render = True
+    scene.display.shading.light = "FLAT"  # studio lighting adds specular highlights to black
+    scene.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    scene.display.shading.light = "STUDIO"
+    for obj in originals:
+        obj.hide_render = False
+    for shadow in shadows:
+        mesh = shadow.data
+        bpy.data.objects.remove(shadow, do_unlink=True)
+        bpy.data.meshes.remove(mesh)
+    bpy.data.materials.remove(black)
+
+
 def main():
     params = load_params()
     out_dir = params["out_dir"]
@@ -143,6 +177,8 @@ def main():
             scene.frame_set(frame)
             scene.render.filepath = os.path.join(out_dir, f"d{d}_f{f}.png")
             bpy.ops.render.render(write_still=True)
+            if params.get("shadow_reach"):
+                render_shadow(scene, params["shadow_reach"], os.path.join(out_dir, f"s{d}_f{f}.png"))
 
     with open(os.path.join(out_dir, "result.json"), "w", encoding="utf-8") as handle:
         json.dump({"model_height": height, "center_z": target_z, "frames": frames, "directions": directions,
