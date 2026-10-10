@@ -14,7 +14,6 @@ import time
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from urllib.parse import urlsplit
 
 import httpx2
 
@@ -84,7 +83,9 @@ def _retry_after_seconds(response: httpx2.Response) -> float | None:
 
 
 def _server_message(response: httpx2.Response) -> str:
-    """The portal answers errors with `{"message": ...}`; fall back to a short slice of the body."""
+    """The portal answers errors with `{"message": ...}`; fall back to a short slice of a plain-text body."""
+    if "html" in response.headers.get("content-type", "").lower():
+        return ""  # an HTML error page says nothing useful in a terminal
     try:
         body = response.json()
     except ValueError:
@@ -104,7 +105,7 @@ def _status_error(
     secrets: Iterable[str],
 ) -> ToolkitError:
     status = response.status_code
-    host = urlsplit(str(response.request.url)).netloc
+    host = response.request.url.host
     detail = _server_message(response)
     suffix = f": {detail}" if detail else ""
     if status == 404:
@@ -174,7 +175,7 @@ def send(
         if asked is not None:
             if asked > policy.max_retry_after:
                 raise fail(
-                    f"{urlsplit(url).netloc} asked to wait {asked:.0f}s before the next request for {what}.",
+                    f"{httpx2.URL(url).host} asked to wait {asked:.0f}s before the next request for {what}.",
                     "try again after that time.",
                     secrets=secrets,
                 )

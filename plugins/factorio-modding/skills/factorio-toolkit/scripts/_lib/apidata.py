@@ -119,7 +119,7 @@ class ApiStore:
             policy=self._policy,
             not_found_hint=(
                 f"check that {version} is a released Factorio version; {BASE_URL}/ lists the versions with docs "
-                "(runtime JSON is not published for the oldest releases)."
+                "(the oldest releases have no machine-readable docs)."
             ),
         )
         return dest
