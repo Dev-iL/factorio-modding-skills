@@ -8,7 +8,7 @@ import pytest
 from _lib.errors import ToolkitError
 from _lib.http import make_client
 
-from portal_site import MIT, TOKEN, USERNAME, FakePortal
+from portal_site import CUSTOM, MIT, TOKEN, USERNAME, FakePortal
 
 
 @pytest.fixture
@@ -67,6 +67,13 @@ def test_info_shows_the_licence_and_the_newest_release_for_a_factorio_version(si
 def test_info_flags_a_missing_licence(site: FakePortal, capsys: pytest.CaptureFixture[str]) -> None:
     site.licence = None
     assert "license: none declared on the portal (treat as all rights reserved" in run(capsys, "info", "tiny-mod")
+
+
+def test_info_prints_the_text_of_a_custom_licence(site: FakePortal, capsys: pytest.CaptureFixture[str]) -> None:
+    site.licence = CUSTOM
+    out = run(capsys, "info", "tiny-mod")
+    assert "license: Own terms (custom_0123)" in out
+    assert "license text (author's own wording, read it before planning): Free to use. No commercial use. No modified versions." in out
 
 
 def test_download_reports_the_unpacked_folder_and_licence_files_without_leaking_credentials(

@@ -71,6 +71,7 @@ def mod_full(license_: dict[str, str] | None = None) -> dict[str, object]:
     return full
 
 
+CUSTOM = {"id": "custom_0123", "name": "Own terms", "title": "Own terms", "url": "", "description": "Free to use.\r\nNo commercial use. No modified versions."}
 MIT = {"id": "default_mit", "name": "mit", "title": "MIT", "url": "https://opensource.org/licenses/MIT"}
 
 

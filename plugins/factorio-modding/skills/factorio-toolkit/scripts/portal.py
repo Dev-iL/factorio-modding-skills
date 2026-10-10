@@ -68,6 +68,15 @@ def licence_line(mod: ModEntry) -> str:
     return f"license: {title} ({licence.get('id', '?')}) {licence.get('url', '')}".rstrip()
 
 
+def licence_text_lines(mod: ModEntry) -> list[str]:
+    """A custom licence has no standard text; the portal stores the author's own wording in `description`."""
+    licence = mod.get("license") or {}
+    text = licence.get("description", "")
+    if not licence.get("id", "").startswith("custom_") or not text.strip():
+        return []
+    return [f"  license text (author's own wording, read it before planning): {one_line(text, 1200)}"]
+
+
 def info_lines(mod: ModEntry, factorio_version: str | None, all_releases: bool) -> list[str]:
     name = mod.get("name", "?")
     releases = releases_of(mod)
@@ -82,6 +91,7 @@ def info_lines(mod: ModEntry, factorio_version: str | None, all_releases: bool) 
         f"downloads: {mod.get('downloads_count', 0)}",
         f"summary: {one_line(mod.get('summary', ''), 300)}",
         licence_line(mod),
+        *licence_text_lines(mod),
         f"source_url: {mod.get('source_url') or '(none)'}",
         f"homepage: {mod.get('homepage') or '(none)'}",
     ]
@@ -163,6 +173,7 @@ def run(args: argparse.Namespace, client: httpx2.Client) -> list[str]:
             f"unpacked: {result.unpacked} ({result.files} files)",
             f"release: {release.get('version')} (factorio {release.get('info_json', {}).get('factorio_version', '?')})",
             licence_line(mod),
+            *licence_text_lines(mod),
             f"license files in the mod: {', '.join(result.licence_files) or 'none found'}",
         ]
     return out
