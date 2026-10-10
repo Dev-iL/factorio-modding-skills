@@ -27,6 +27,7 @@ import tempfile
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypedDict
 
 from PIL import Image
 
@@ -240,19 +241,16 @@ def render_lua(
 ) -> str:
     """A `Sprite4Way`/`Animation4Way`-shaped table (a single sprite or animation for one direction) with the shadow layer."""
     kind = "animation" if layout.frames > 1 else "sprite"
-    var = f"{re.sub(r'[^0-9A-Za-z_]', '_', name)}_{kind}"
-    keys = DIRECTION_KEYS[layout.directions]
-    lines = [f"local {var} = {{"] if keys == ("",) else [f"local {var} = {{"]
-    for d, key in enumerate(keys):
+    var = f"{re.sub(r'[^0-9A-Za-z_]', '_', name)}_{kind}"  # `name` may be hyphenated; Lua identifiers cannot be
+    lines = [f"local {var} = {{"]
+    for d, key in enumerate(DIRECTION_KEYS[layout.directions]):
         origin = layout.direction_origin(d)
         layers = [_lua_layer(layout, main_file, origin, shift, scale, speed, False)]
         if shadow_file:
             layers.append(_lua_layer(layout, shadow_file, origin, shift, scale, speed, True))
-        body = ",\n".join(f"      {layer}" for layer in layers) if key else ",\n".join(f"    {layer}" for layer in layers)
-        if key:
-            lines.append(f"  {key} = {{\n    layers = {{\n{body},\n    }},\n  }},")
-        else:
-            lines.append(f"  layers = {{\n{body},\n  }},")
+        indent = "    " if key else "  "  # a direction key opens one more table level
+        block = [f"{indent}layers = {{", *(f"{indent}  {layer}," for layer in layers), f"{indent}}},"]
+        lines += [f"  {key} = {{", *block, "  },"] if key else block
     lines.append("}")
     return "\n".join(lines)
 
@@ -282,7 +280,17 @@ def find_blender(env: Mapping[str, str] | None = None) -> Path:
     )
 
 
-def run_blender(blender: Path, params: Mapping[str, object], work: Path, timeout: float) -> dict[str, object]:
+class RenderInfo(TypedDict):
+    """What blender_scene.py reports in result.json."""
+
+    model_height: float
+    center_z: float
+    frames: int
+    directions: int
+    blender: str
+
+
+def run_blender(blender: Path, params: Mapping[str, object], work: Path, timeout: float) -> RenderInfo:
     """Run `blender_scene.py` headless once for the whole job; return its result.json."""
     work.mkdir(parents=True, exist_ok=True)
     params_file = work / "params.json"
@@ -301,7 +309,8 @@ def run_blender(blender: Path, params: Mapping[str, object], work: Path, timeout
             f"Blender exited with code {proc.returncode} before finishing the render. Last output:\n{excerpt}",
             "fix the error shown above (a model-script exception names its line); re-run with the same arguments.",
         )
-    return json.loads(result_file.read_text("utf-8"))
+    info: RenderInfo = json.loads(result_file.read_text("utf-8"))
+    return info
 
 
 # --- subcommands ---------------------------------------------------------------------------------------------------------
@@ -372,7 +381,7 @@ def cmd_render(args: argparse.Namespace) -> int:
         main_frames = load_frames(Path(tmp), "d", args.directions, args.frames)
         shadow_frames = [] if args.no_shadow else load_frames(Path(tmp), "s", args.directions, args.frames)
     scale = TILE_PX_AT_SCALE_1 / args.px_per_tile
-    center_z = float(info["center_z"])  # type: ignore[arg-type]
+    center_z = info["center_z"]
     shift = (0.0, -center_z * math.cos(math.radians(args.elevation)))  # ground point under the entity sits this far below frame centre
 
     require_drawn(main_frames)
@@ -395,7 +404,7 @@ def cmd_render(args: argparse.Namespace) -> int:
     lua_file = args.out / f"{args.name}.lua"
     lua_file.write_text(lua + "\n", "utf-8")
     lines += [f"camera: orthographic, elevation {args.elevation} deg, {args.px_per_tile} px/tile -> scale {_lua_number(scale)}, "
-              f"model height {float(info['model_height']):.2f} tiles",  # type: ignore[arg-type]
+              f"model height {info['model_height']:.2f} tiles",
               f"lua: {lua_file}", "", lua]
     print("\n".join(lines))
     return 0
