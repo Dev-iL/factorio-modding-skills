@@ -23,7 +23,7 @@ from .errors import ToolkitError
 from .paths import GameInstall
 
 OFFICIAL_MODS = ("elevated-rails", "quality", "space-age", "recycler")
-_DEP_PREFIX = re.compile(r"^\s*(?P<flag>\(\?\)|\?|~|!)?\s*(?P<name>[A-Za-z0-9_\- ]+?)\s*(?:[<>=]=?.*)?$")
+_DEP_PREFIX = re.compile(r"^\s*(?P<flag>\(\?\)|\?|\+|~|!)?\s*(?P<name>[A-Za-z0-9_\- ]+?)\s*(?:[<>=]=?.*)?$")
 
 
 @dataclass(frozen=True)

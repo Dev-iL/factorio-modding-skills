@@ -20,7 +20,7 @@ from pathlib import Path
 
 from _lib.args import add_sandbox_args, require_mod_dirs
 from _lib.errors import EXIT_FAILED, ToolkitError, cli_main
-from _lib.gamerun import GameResult, run_game
+from _lib.gamerun import GameResult, run_game, save_log
 from _lib.logscan import format_finding, scan_log
 from _lib.paths import locate_game
 from _lib.sandbox import sandbox
@@ -62,6 +62,7 @@ def main(argv: Sequence[str]) -> int:
     mods = require_mod_dirs(args.mod)
     with sandbox(install, mods, args.enable, args.keep) as (box, infos):
         result = run_game(install, box, ["--dump-data", "--check-unused-prototype-data"], args.timeout)
+        save_log(args.log_dir, "check-data", result)
         scan = scan_log(result.log, unused_is_error=not args.allow_unused)
         dump = box.script_output / "data-raw-dump.json"
         names = ", ".join(f"{i.name} {i.version}" for i in infos)

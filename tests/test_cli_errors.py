@@ -34,3 +34,16 @@ def test_missing_mod_folder_is_a_clear_error(tmp_path: Path, monkeypatch: pytest
     with pytest.raises(ToolkitError) as err:
         check_data.main(["--path", str(root), "--mod", str(tmp_path / "nope")])
     assert "does not exist" in err.value.message
+
+
+def test_scan_log_dir_scans_every_saved_log(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    (tmp_path / "check-data.log").write_text("   1.500 Factorio initialised\n", "utf-8")
+    (tmp_path / "run-tests-create.log").write_text('   1.500 Error Util.cpp:81: Failed to load mod "m": __m__/control.lua:3: oops\n', "utf-8")
+    assert scan_log.main(["--log-dir", str(tmp_path)]) == 1
+    assert "m: control.lua:3" in capsys.readouterr().out
+
+
+def test_scan_log_dir_without_logs_is_a_clear_error(tmp_path: Path) -> None:
+    with pytest.raises(ToolkitError) as err:
+        scan_log.main(["--log-dir", str(tmp_path)])
+    assert "--log-dir" in (err.value.hint or "")

@@ -84,6 +84,15 @@ def test_unknown_prototype_property_fails_unless_allowed(install: GameInstall, t
     assert run_cli(check_data, ["--mod", str(mod), "--allow-unused"], capsys)[0] == 0
 
 
+def test_launch_logs_are_kept_in_log_dir_and_scan_clean(install: GameInstall, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    logs = tmp_path / "logs"
+    assert run_cli(check_data, ["--mod", str(MODS / "fms-good"), "--log-dir", str(logs)], capsys)[0] == 0
+    assert run_cli(run_tests, ["--mod", str(MODS / "fms-good"), "--log-dir", str(logs)], capsys)[0] == 0
+    assert sorted(p.name for p in logs.iterdir()) == ["check-data.log", "run-tests-benchmark.log", "run-tests-create.log"]
+    code, out = run_cli(scan_log, ["--log-dir", str(logs)], capsys)
+    assert code == 0 and "PASS log scan" in out and "PASS test: item prototype exists at map creation" in out
+
+
 def test_in_game_test_passes_without_a_window(install: GameInstall, capsys: pytest.CaptureFixture[str]) -> None:
     code, out = run_cli(run_tests, ["--mod", str(MODS / "fms-good")], capsys)
     assert code == 0, out

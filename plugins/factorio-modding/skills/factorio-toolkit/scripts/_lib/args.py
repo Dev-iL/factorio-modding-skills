@@ -29,6 +29,7 @@ def add_sandbox_args(parser: argparse.ArgumentParser) -> None:
         "official mods named in info.json dependencies are enabled automatically",
     )
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT, help="seconds to wait for each game launch (default: %(default)s)")
+    parser.add_argument("--log-dir", type=Path, metavar="DIR", help="save each launch's game log in DIR (for scan_log.py --log-dir); the sandbox itself is deleted")
     parser.add_argument("--keep", action="store_true", help="keep the temporary sandbox (log, saves, script output) and print its path")
 
 

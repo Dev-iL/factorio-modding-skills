@@ -18,7 +18,7 @@ from collections.abc import Sequence
 
 from _lib.args import add_sandbox_args, require_mod_dirs
 from _lib.errors import EXIT_FAILED, cli_main
-from _lib.gamerun import GameResult, run_game
+from _lib.gamerun import GameResult, run_game, save_log
 from _lib.logscan import Finding, TestResult, format_finding, scan_log
 from _lib.paths import locate_game
 from _lib.sandbox import sandbox
@@ -44,6 +44,7 @@ def main(argv: Sequence[str]) -> int:
         ]
         for launch in launches:
             result = run_game(install, box, launch, args.timeout)  # each launch overwrites the log, so scan after each
+            save_log(args.log_dir, f"run-tests-{launch[0].lstrip('-')}", result)
             scan = scan_log(result.log)
             findings += scan.errors
             tests += scan.tests

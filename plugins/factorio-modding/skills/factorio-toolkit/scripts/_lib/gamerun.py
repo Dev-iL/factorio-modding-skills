@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+from pathlib import Path
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -37,3 +38,10 @@ def run_game(install: GameInstall, box: Sandbox, args: Sequence[str], timeout: f
         raise ToolkitError(f"could not start {install.exe}: {exc}", "check FACTORIO_PATH and that the executable is not blocked by antivirus.") from exc
     log = box.log_path.read_text("utf-8", errors="replace") if box.log_path.is_file() else ""
     return GameResult(args=tuple(args), exit_code=proc.returncode, output=proc.stdout + proc.stderr, log=log)
+
+
+def save_log(directory: Path | None, label: str, result: GameResult) -> None:
+    """Keep a launch's log after the sandbox is deleted: `<directory>/<label>.log` (no-op without a directory)."""
+    if directory is not None:
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / f"{label}.log").write_text(result.log, "utf-8")
