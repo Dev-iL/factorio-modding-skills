@@ -68,4 +68,6 @@ Load a reference when its situation comes up; they are not needed for every task
 | [graphics-ladder.md](references/graphics-ladder.md) | an entity or item needs graphics |
 | [licensing.md](references/licensing.md) | building on, patching or porting another author's mod |
 | [migration-2.0-to-2.1.md](references/migration-2.0-to-2.1.md) | porting or reading 2.0-era code |
+| [design-scorecard.md](references/design-scorecard.md) | scoring an idea or a gameplay proposal |
+| [factorio-gates.md](references/factorio-gates.md) | writing a manifest for a mod: gate templates that run the game |
 | [graveyard.md](references/graveyard.md) | before trying an unusual approach; it lists ones known to fail |
