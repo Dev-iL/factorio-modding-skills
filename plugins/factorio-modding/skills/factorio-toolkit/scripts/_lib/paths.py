@@ -59,7 +59,7 @@ def _candidate_roots(env: Mapping[str, str]) -> list[Path]:
 
 
 def _normalise_root(raw: str | Path) -> Path:
-    """Accept the install root, its `bin\x64` folder, or the exe itself."""
+    """Accept the install root, its `bin/x64` folder, or the exe itself."""
     path = Path(raw).expanduser()
     if path.name.lower() == "factorio.exe":
         return path.parent.parent.parent
@@ -140,7 +140,7 @@ def locate_game(explicit: str | Path | None = None, env: Mapping[str, str] | Non
         if not _is_install(root):
             raise ToolkitError(
                 f"{source} is {raw!r}, but there is no {EXE_RELATIVE} under {root}.",
-                f"point {source} at the folder that contains bin\x64\factorio.exe ({README_ANCHOR}).",
+                f"point {source} at the folder that contains bin/x64/factorio.exe ({README_ANCHOR}).",
             )
         return resolve_install(root, env)
     for root in _candidate_roots(env):
@@ -148,7 +148,7 @@ def locate_game(explicit: str | Path | None = None, env: Mapping[str, str] | Non
             return resolve_install(root, env)
     raise ToolkitError(
         "no standalone Factorio install found: FACTORIO_PATH is not set and none of the usual locations has one.",
-        f"set FACTORIO_PATH to the folder that contains bin\x64\factorio.exe ({README_ANCHOR}).",
+        f"set FACTORIO_PATH to the folder that contains bin/x64/factorio.exe ({README_ANCHOR}).",
     )
 
 

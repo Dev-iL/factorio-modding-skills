@@ -1,0 +1,8 @@
+{
+  "name": "fms-good",
+  "version": "0.1.0",
+  "title": "FMS good test mod",
+  "author": "factorio-modding-skills tests",
+  "factorio_version": "2.1",
+  "dependencies": ["base"]
+}
