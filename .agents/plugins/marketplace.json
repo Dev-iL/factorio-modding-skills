@@ -1,0 +1,20 @@
+{
+  "name": "factorio-modding-skills",
+  "interface": {
+    "displayName": "Factorio modding skills"
+  },
+  "plugins": [
+    {
+      "name": "factorio-modding",
+      "source": {
+        "source": "local",
+        "path": "./plugins/factorio-modding"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    }
+  ]
+}

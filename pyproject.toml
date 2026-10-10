@@ -1,0 +1,20 @@
+[project]
+name = "factorio-modding-skills-dev"
+version = "0.1.0"
+description = "Development environment for the factorio-modding plugin scripts (tests only; the scripts carry their own PEP 723 headers)."
+requires-python = ">=3.15"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest", "httpx2", "pillow"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "game: needs the local Factorio install (FACTORIO_PATH or a standard location)",
+    "blender: needs a local Blender install (BLENDER_PATH or a standard location)",
+    "network: needs the live mod portal or lua-api.factorio.com",
+]

@@ -1,0 +1,19 @@
+{
+  "name": "factorio-modding-skills",
+  "owner": {
+    "name": "Dev-iL",
+    "url": "https://github.com/Dev-iL"
+  },
+  "metadata": {
+    "description": "Skills for designing, building and porting Factorio mods with a coding agent: scored designs, a launch-and-test loop against the real game, and API-accurate code."
+  },
+  "allowCrossMarketplaceDependenciesOn": ["manifest-dev"],
+  "plugins": [
+    {
+      "name": "factorio-modding",
+      "source": "./plugins/factorio-modding",
+      "description": "Design, develop and port Factorio mods against the installed game version.",
+      "category": "development"
+    }
+  ]
+}

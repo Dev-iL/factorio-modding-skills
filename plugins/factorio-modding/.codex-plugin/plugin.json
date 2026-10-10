@@ -1,0 +1,10 @@
+{
+  "name": "factorio-modding",
+  "version": "0.1.0",
+  "description": "Design, develop and port Factorio mods against the installed game version: portal similarity search, scored designs, API lookup and diff, a launch-and-test loop, and sprite tools.",
+  "author": { "name": "Dev-iL", "url": "https://github.com/Dev-iL" },
+  "homepage": "https://github.com/Dev-iL/factorio-modding-skills",
+  "repository": "https://github.com/Dev-iL/factorio-modding-skills",
+  "license": "MIT",
+  "skills": "./skills/"
+}
