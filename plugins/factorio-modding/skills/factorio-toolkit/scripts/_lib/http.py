@@ -220,6 +220,12 @@ def cached_download(
     data = send(client, "GET", url, what=what, policy=policy, not_found_hint=not_found_hint).content
     if validate is not None:
         validate(data)
+    write_atomic(dest, data)
+    return True
+
+
+def write_atomic(dest: Path, data: bytes) -> None:
+    """Write `data` to a sibling temp file and rename it over `dest`."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     partial = dest.with_name(f"{dest.name}.{os.getpid()}.part")
     try:
@@ -227,7 +233,6 @@ def cached_download(
         os.replace(partial, dest)
     finally:
         partial.unlink(missing_ok=True)
-    return True
 
 
 def parse_json_bytes(data: bytes, what: str) -> JsonObject:
