@@ -83,6 +83,13 @@ def test_a_missing_changelog_names_the_ways_to_provide_one(tmp_path: Path) -> No
     assert "--file" in (info.value.hint or "") and "FACTORIO_PATH" in (info.value.hint or "")
 
 
+def test_without_a_game_or_a_file_the_error_offers_both_ways_out(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("FACTORIO_PATH", str(tmp_path / "no-game-here"))
+    with pytest.raises(ToolkitError) as info:
+        changelog.main(["2.0.77", "2.1.21"])
+    assert "FACTORIO_PATH" in (info.value.hint or "") and "--file" in (info.value.hint or "")
+
+
 def test_a_changelog_older_than_the_target_is_flagged(changelog_file: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert changelog.main(["2.0.77", "2.9.0", "--file", str(changelog_file)]) == 0
     assert "ends at 2.1.21" in capsys.readouterr().err

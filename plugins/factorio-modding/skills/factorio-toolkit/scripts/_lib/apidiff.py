@@ -23,6 +23,7 @@ from .apimodel import (
     format_param,
     format_returns,
     format_type,
+    is_parameter,
     method_params,
     property_descriptor,
 )
@@ -80,7 +81,7 @@ def _concept_entries(out: Entries, stage: Stage, kind: str, field_kind: str, con
         fields += [
             Property(name=p.get("name", ""), type=p.get("type", "?"), optional=p.get("optional", False))
             for p in t.get("parameters", [])
-            if isinstance(p, dict) and "name" in p
+            if is_parameter(p)
         ]
     for f in fields:
         _add(out, stage, field_kind, f"{name}.{f.get('name', '')}", property_descriptor(f), owner=name)

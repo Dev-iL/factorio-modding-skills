@@ -84,7 +84,7 @@ def info_lines(mod: ModEntry, factorio_version: str | None, all_releases: bool) 
     by_factorio = Counter(r.get("info_json", {}).get("factorio_version", "?") for r in releases)
     lines = [
         f"name: {name}",
-        f"url: {BASE_URL}/mod/{name}",
+        f"url: {BASE_URL}/mod/{name.replace(' ', '%20')}",
         f"title: {mod.get('title', '')}",
         f"owner: {mod.get('owner', '')}",
         f"category: {mod.get('category', '')}  tags: {', '.join(mod.get('tags', []))}",

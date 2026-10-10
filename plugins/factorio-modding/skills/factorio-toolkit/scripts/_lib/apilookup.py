@@ -29,6 +29,7 @@ from .apimodel import (
     by_order,
     first_line,
     format_param,
+    is_parameter,
     format_returns,
     format_type,
     method_params,
@@ -66,9 +67,10 @@ class Docs:
 
     def defines(self) -> list[tuple[Stage, Define]]:
         """Top-level defines; the runtime and prototype documents carry the same ones, so the first present is used."""
-        for stage, doc in (("runtime", self.runtime), ("prototype", self.prototype)):
-            if doc and doc.get("defines"):
-                return [(stage, d) for d in doc["defines"]]
+        if self.runtime and self.runtime.get("defines"):
+            return [("runtime", d) for d in self.runtime["defines"]]
+        if self.prototype and self.prototype.get("defines"):
+            return [("prototype", d) for d in self.prototype["defines"]]
         return []
 
 
@@ -264,7 +266,7 @@ def _concept_fields(c: Concept) -> list[Property]:
     return [
         Property(name=p.get("name", ""), order=p.get("order", 0), description=p.get("description", ""), type=p.get("type", "?"), optional=p.get("optional", False))
         for p in t.get("parameters", [])
-        if isinstance(p, dict) and "name" in p
+        if is_parameter(p)
     ]
 
 
@@ -375,9 +377,9 @@ def _find_member_block(docs: Docs, head: str, member: str, full: bool) -> list[l
             if blocks:
                 break
     if head in prototypes:
-        for source in chain_of(head, prototypes):
-            src = source.get("name", "")
-            found = [p for p in source.get("properties", []) if member in (p.get("name"), p.get("alt_name"))]
+        for proto_source in chain_of(head, prototypes):
+            src = proto_source.get("name", "")
+            found = [p for p in proto_source.get("properties", []) if member in (p.get("name"), p.get("alt_name"))]
             if found:
                 blocks.append(render_property(head, src, found[0]))
                 break
@@ -399,8 +401,8 @@ def _member_candidates(docs: Docs, head: str) -> list[str]:
     names: list[str] = []
     for source in chain_of(head, docs.classes()):
         names += [m.get("name", "") for m in source.get("methods", [])] + [a.get("name", "") for a in source.get("attributes", [])]
-    for source in chain_of(head, docs.prototypes()):
-        names += [p.get("name", "") for p in source.get("properties", [])]
+    for proto_source in chain_of(head, docs.prototypes()):
+        names += [p.get("name", "") for p in proto_source.get("properties", [])]
     if head in docs.events():
         names += [p.get("name", "") for p in docs.events()[head].get("data", [])]
     for table in (docs.concepts(), docs.types()):

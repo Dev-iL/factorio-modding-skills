@@ -50,15 +50,16 @@ pointed at. Tests run with `--mod-directory` pointing at a throwaway folder
 
 Each of these was observed on live responses from `mods.factorio.com`:
 
-- `GET /api/mods?sort=downloads_count` is accepted and ignored: the result is ordered by name, descending. Only `name`,
-  `created_at` and `updated_at` sort. Rank by download count client-side, from the `downloads_count` field.
+- `GET /api/mods?sort=downloads_count` is accepted and ignored: the portal falls back to name order (with
+  `sort_order=desc` the result came back in reverse alphabetical order). Only `name`, `created_at` and `updated_at` sort. Rank by download count client-side, from the `downloads_count` field.
 - `pagination.links.next` drops the `version` filter. Request page *n* by number with the same parameters.
 - With a `version` filter, `latest_release` is the newest release for that Factorio version, not the newest overall, and
   a mod appears if any of its releases matches (a mod whose newest release is 2.1 is listed under `version=2.0` if it also
   has a 2.0 release). `2.0.77` is accepted and treated as `2.0`.
 - `POST /api/search` without `username` and `token` in the JSON body answers `Missing data for required field.`. Search
   has no anonymous mode; listing and `/api/mods/<name>/full` do.
-- Download links (`/download/<name>/<id>`) answer 403 without `?username=&token=`, and 403 with a wrong token, as an HTML page.
+- Download links (`/download/<name>/<id>`) answer 403 with a wrong `?username=&token=` (an HTML page); a request with no
+  credentials at all was answered 403 by a Cloudflare challenge page ("Just a moment...") rather than by the portal.
   A valid request answers 302 to a CDN, so the client must follow redirects.
 - Search results hold `latest_release` as an id string; list results hold it as an object; `namelist` results hold
   `releases` and no `latest_release`. Do not index into one shape with another's keys.

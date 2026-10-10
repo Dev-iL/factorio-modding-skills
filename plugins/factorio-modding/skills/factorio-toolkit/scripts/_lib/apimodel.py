@@ -230,7 +230,7 @@ def format_type(t: TypeExpr | int | float | bool) -> str:
         case "literal":
             return json.dumps(t["value"])
         case "function":
-            params = [p for p in t.get("parameters", []) if not _is_parameter(p)]
+            params = [p for p in t.get("parameters", []) if not is_parameter(p)]
             return f"function({', '.join(format_type(p) for p in params)})"
         case "LuaLazyLoadedValue":
             return f"LuaLazyLoadedValue[{format_type(t['value'])}]"
@@ -242,12 +242,12 @@ def format_type(t: TypeExpr | int | float | bool) -> str:
             return f"<{kind or 'unknown'}: {json.dumps(t, sort_keys=True)[:80]}>"
 
 
-def _is_parameter(value: Parameter | TypeExpr) -> TypeIs[Parameter]:
+def is_parameter(value: Parameter | TypeExpr) -> TypeIs[Parameter]:
     return isinstance(value, dict) and "name" in value
 
 
 def _format_table(t: ComplexType) -> str:
-    params = [p for p in t.get("parameters", []) if _is_parameter(p)]
+    params = [p for p in t.get("parameters", []) if is_parameter(p)]
     text = ", ".join(format_param(p) for p in by_order(params))
     for group in by_order(t.get("variant_parameter_groups", [])):
         text += f"; {group.get('name', '')}: " + ", ".join(format_param(p) for p in by_order(group.get("parameters", [])))

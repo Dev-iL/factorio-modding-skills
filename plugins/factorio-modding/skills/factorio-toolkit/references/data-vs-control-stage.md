@@ -31,23 +31,24 @@ Source: Data lifecycle. The rules that follow come from the same page unless ano
 
 **Data stage**
 - No game exists yet: the runtime API (`game`, `script`, `LuaEntity` and so on) is not available.
-- Each stage runs in one shared Lua state that is thrown away afterwards. A variable or function defined in
-  `data.lua` is not visible in `control.lua`, and properties the game does not know are discarded.
-  The only thing that crosses into the control stage is the prototypes themselves.
-- The three rounds exist so that a mod can change other mods' prototypes without depending on load order: every mod's
-  `data.lua` runs first, then every mod's `data-updates.lua`, then every mod's `data-final-fixes.lua`. Define your own
-  prototypes in `data.lua`; change prototypes that other mods or the base game define in `data-updates.lua`; use
-  `data-final-fixes.lua` only for corrections that must overrule everyone, because it runs last.
-- The load order of mods is by the depth of their dependency chain, then by name. If you need another mod's prototypes
-  to exist before yours run, declare it in `info.json` `dependencies` (Mod structure page; `? name` marks it optional).
+- All mods share one Lua state per stage, and the game discards it when the stage ends. A variable or function defined
+  in `data.lua` does not exist in `control.lua`, and any property the game does not recognise is dropped. Prototypes are
+  the only data that survives into the control stage.
+- Each stage makes three passes over all mods: first every mod's `data.lua`, then every mod's `data-updates.lua`, then
+  every mod's `data-final-fixes.lua`. Because of that, a mod can adjust someone else's prototype without being loaded after it.
+  Put your own prototypes in `data.lua`; put edits to prototypes owned by the base game or another mod in
+  `data-updates.lua`; keep `data-final-fixes.lua` for corrections that must win over every other mod, since nothing runs after it.
+- Mods load in order of dependency-chain depth (shallower first), then by name. When your code needs another mod's
+  prototypes to exist already, list that mod in `info.json` `dependencies` (a `?` prefix makes it optional; Mod structure page).
 - `mods` maps every enabled mod's name to its version, which is how data-stage code adapts to other mods.
 
 **Control stage**
-- `control.lua` runs every time a save is created or loaded. Prototypes can no longer be changed and `data` is gone.
-- `on_init` runs when the mod is new to the save, `on_load` when it was already there, and `on_configuration_changed`
-  when the game version, a mod version, the mod set, a startup setting or the prototype set changed. A joining
-  multiplayer client runs only `control.lua` and `on_load`, so both must leave the same state as on the other players'
-  machines. Writing to `storage` inside `on_load` is an error (Data lifecycle and Storage pages).
+- `control.lua` runs on every save creation and every save load. Prototypes can no longer be changed and `data` no longer exists.
+- `on_init` runs when the mod is new to the save, `on_load` when it was already part of it, and `on_configuration_changed`
+  (for every mod at once) when the game or any mod changed version, mods were added or removed, a startup setting differs,
+  or prototypes were added or removed. A client joining a multiplayer game runs only `control.lua` and `on_load`, so
+  those two must rebuild exactly the state the other players already have. Writing to `storage` inside `on_load` is an
+  error (Data lifecycle and Storage pages).
 - State that must survive a save and load goes into `storage`. It accepts strings, numbers, booleans, nil, tables and
   LuaObject references; functions are an error (Storage page). Anything kept in an ordinary variable is lost on load
   and differs between a joining client and the host.

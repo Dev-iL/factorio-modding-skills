@@ -85,6 +85,13 @@ def render(releases: Sequence[Release], sections: Sequence[str]) -> list[str]:
     return lines
 
 
+def _game_changelog(game_path: str | None) -> Path:
+    try:
+        return locate_game(game_path).changelog
+    except ToolkitError as exc:
+        raise ToolkitError(exc.message, f"{exc.hint or ''} Or pass a changelog.txt directly with --file.".strip()) from exc
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="changelog.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("after", help="version already in use, excluded (for example 2.0.77)")
@@ -105,7 +112,7 @@ def main(argv: Sequence[str]) -> int:
             f"FROM ({args.after}) must be lower than TO ({args.upto}).",
             "the range is FROM exclusive to TO inclusive; downgrades are not supported.",
         )
-    path: Path = args.file or locate_game(args.path).changelog
+    path = args.file or _game_changelog(args.path)
     if not path.is_file():
         raise ToolkitError(
             f"changelog not found at {path}.",

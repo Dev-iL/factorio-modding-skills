@@ -41,7 +41,7 @@ class RetryPolicy:
 
     def delay(self, attempt: int) -> float:
         """Seconds to wait after failed attempt number `attempt` (1-based): 1, 2, 4, ... plus jitter."""
-        base = min(self.max_delay, self.base_delay * 2 ** (attempt - 1))
+        base = min(self.max_delay, self.base_delay * float(2 ** (attempt - 1)))
         return base + base * self.jitter * self.rng()
 
 
@@ -91,7 +91,7 @@ def _server_message(response: httpx2.Response) -> str:
     except ValueError:
         return response.text.strip()[:200]
     if isinstance(body, dict) and isinstance(body.get("message"), str):
-        return body["message"]
+        return str(body["message"])
     return response.text.strip()[:200]
 
 

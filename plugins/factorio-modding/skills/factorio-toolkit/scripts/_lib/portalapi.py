@@ -216,14 +216,15 @@ class Portal:
             raise fail(f"release {version} of {mod!r} has no usable download_url ({url!r}).", "run `portal.py info` and report the release data.")
         response = send(
             self._client, "GET", f"{self._base}{url}", what=f"the download of {mod} {version}",
-            params=creds.as_query(), policy=self._policy, auth_hint=AUTH_HINT, secrets=[creds.token],
+            params=creds.as_query(), policy=self._policy, auth_hint=f"{AUTH_HINT} A 403 can also be a challenge page blocking the request; try again later.",
+            secrets=[creds.token],
             not_found_hint="the release may have been removed; run `portal.py info` for the current releases.",
         )
         data = response.content
         if not zipfile.is_zipfile(io.BytesIO(data)):
             raise fail(
                 f"the portal's answer for {mod} {version} is not a zip file (it starts with {data[:40]!r}).",
-                f"the portal usually answers like this when the credentials are wrong. {AUTH_HINT}", secrets=[creds.token],
+                f"an HTML answer usually means the credentials were rejected or a challenge page blocked the request. {AUTH_HINT}", secrets=[creds.token],
             )
         expected = release.get("sha1", "")
         if expected and hashlib.sha1(data).hexdigest() != expected:
