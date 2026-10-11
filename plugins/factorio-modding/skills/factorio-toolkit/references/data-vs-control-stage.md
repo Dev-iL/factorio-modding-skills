@@ -4,7 +4,7 @@ Where logic belongs. The stage order, the three files per stage, load order, and
 2.1.21 pages: [Data lifecycle](https://lua-api.factorio.com/2.1.21/auxiliary/data-lifecycle.html),
 [Storage](https://lua-api.factorio.com/2.1.21/auxiliary/storage.html), and [Mod structure](https://lua-api.factorio.com/2.1.21/auxiliary/mod-structure.html).
 Read them for those facts. They leave one consequence for you to work out. An ordinary Lua variable in `control.lua` is lost on
-load and differs between a joining client and the host, so anything that must survive a save or agree across players goes into `storage`.
+load and differs between a joining client and the host. Anything that must survive a save or agree across players goes into `storage`.
 
 ## When to prefer the data stage
 

@@ -76,7 +76,7 @@ codex plugin add factorio-modding@factorio-modding-skills
 design-mod skill to plan a mod that adds a new fluid".
 
 Codex runs commands in a sandbox that can block uv from writing its cache; this happened in this project's own test run. If `uv run` fails with "Access is denied", allow the
-sandbox to write the uv cache folder and to reach the network. The hosts are lua-api.factorio.com and the mod portal. Alternatively, point
+sandbox to write the uv cache folder and to reach the network. The sites to allow are lua-api.factorio.com and the mod portal. Alternatively, point
 `UV_CACHE_DIR` and `FM_CACHE_DIR` (the toolkit's API cache) at a folder the sandbox may write.
 
 ## Point the plugin at your game

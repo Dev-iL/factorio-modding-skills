@@ -11,7 +11,7 @@ version too. This page keeps only what those commands cannot explain: names that
 ## Declare the new version
 
 - `info.json` `factorio_version` takes one major version: a mod written for `"2.0"` must say `"2.1"` to load on 2.1, and
-  cannot declare both (Mod structure page, [lua-api.factorio.com](https://lua-api.factorio.com/2.1.21/auxiliary/mod-structure.html)).
+  cannot declare both ([Mod structure](https://lua-api.factorio.com/2.1.21/auxiliary/mod-structure.html) page).
   One code base for both versions means two releases with different `info.json` files.
 - New in `info.json`: the `+` dependency prefix (recommended dependency) and `migrates_from`, which lets a mod take over the
   storage and GUI elements of a removed mod (2.1.18).

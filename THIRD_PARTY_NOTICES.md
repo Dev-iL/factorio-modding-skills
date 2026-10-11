@@ -34,7 +34,7 @@ SOFTWARE.
 
 ## Jaer985/factorio-modding-skill
 
-Source: [Jaer985/factorio-modding-skill](https://github.com/Jaer985/factorio-modding-skill). Facts about 2.1 breaking changes in `migration-2.0-to-2.1.md` were adapted from this project after being checked against
+Source: [Jaer985/factorio-modding-skill](https://github.com/Jaer985/factorio-modding-skill). Facts about 2.1 breaking changes in `migration-2.0-to-2.1.md` were adapted from that repository after being checked against
 Factorio 2.1.21; that file carries a header naming it. The portable-install and `--dump-data` workflow notes cover the same ground
 but were written from observations of a 2.1.21 install. Used under the MIT licence:
 
