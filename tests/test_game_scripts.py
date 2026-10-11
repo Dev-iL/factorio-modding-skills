@@ -135,7 +135,7 @@ def test_error_in_a_required_runtime_file_shows_the_console_error(install: GameI
     (mod / "boost.lua").write_text('error("boom from boost")', "utf-8")
     code, out = run_cli(run_tests, ["--mod", str(mod)], capsys)
     assert code == 1
-    assert "boom from boost" in out and "boost.lua:1" in out
+    assert "[control stage] fms-reqerr: boost.lua:1" in out and "boom from boost" in out and "console output" in out
 
 
 def test_mod_that_reports_no_tests_fails(install: GameInstall, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

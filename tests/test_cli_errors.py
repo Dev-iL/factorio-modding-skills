@@ -47,3 +47,19 @@ def test_scan_log_dir_without_logs_is_a_clear_error(tmp_path: Path) -> None:
     with pytest.raises(ToolkitError) as err:
         scan_log.main(["--log-dir", str(tmp_path)])
     assert "--log-dir" in (err.value.hint or "")
+
+
+def test_check_data_reports_an_error_that_only_reached_the_console(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    from _lib.gamerun import GameResult
+
+    root = tmp_path / "game"
+    (root / "bin" / "x64").mkdir(parents=True)
+    (root / "bin" / "x64" / "factorio.exe").write_bytes(b"")
+    mod = tmp_path / "fms-x"
+    mod.mkdir()
+    (mod / "info.json").write_text('{"name": "fms-x", "version": "0.1.0"}', "utf-8")
+    console = "Error: fms-x 0.1.0 errored when running a required file.\n__fms-x__/data.lua:1: boom\n"
+    monkeypatch.setattr(check_data, "run_game", lambda *args, **kwargs: GameResult(args=("--dump-data",), exit_code=1, output=console, log=""))
+    assert check_data.main(["--path", str(root), "--mod", str(mod)]) == 1
+    out = capsys.readouterr().out
+    assert "[data stage] fms-x: data.lua:1" in out and "console output" in out and "FAIL data stage" in out

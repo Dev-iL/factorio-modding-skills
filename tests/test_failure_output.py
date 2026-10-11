@@ -76,3 +76,22 @@ stack traceback:
 def test_a_crash_printed_as_several_error_lines_is_one_finding() -> None:
     [finding] = scan_console(CONSOLE_CRASH)
     assert finding.where == "fms-x: control.lua:1" and "attempt to index" in finding.message
+
+
+def test_excerpt_keeps_the_traceback_and_stops_at_the_next_log_entry() -> None:
+    text = (
+        "Error: fms-x 0.1.0 errored when running a required file.\n"
+        "__fms-x__/boost.lua:1: boom\n"
+        "stack traceback:\n"
+        "   2.917 Info something else: not part of the error\n"
+    )
+    [finding] = scan_console(text)
+    assert finding.excerpt == (
+        "Error: fms-x 0.1.0 errored when running a required file.",
+        "__fms-x__/boost.lua:1: boom",
+        "stack traceback:",
+    )
+
+
+def test_a_line_that_merely_starts_with_the_word_error_is_not_an_error_block() -> None:
+    assert scan_console("Errors were not found\nError handling is enabled\n") == []
