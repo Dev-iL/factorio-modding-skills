@@ -31,7 +31,7 @@ def _missing_message(missing: list[str]) -> ToolkitError:
         f"mod portal credentials are not set ({' and '.join(missing)} missing from the environment).",
         "set both variables where your agent host passes them to commands. Claude Code: add them under `env` in "
         "~/.claude/settings.json. Codex: add them under `[shell_environment_policy] set` in ~/.codex/config.toml. "
-        "Your username and token are on https://factorio.com/profile. "
+        "The token is the `service-token` value in player-data.json in the Factorio user data folder (https://wiki.factorio.com/Mod_portal_API); copy it yourself. "
         f"As a last resort the script can read them from the game's player-data.json, but only if you approve that "
         f"in the conversation and the script is run with {ALLOW_FLAG}.",
     )
