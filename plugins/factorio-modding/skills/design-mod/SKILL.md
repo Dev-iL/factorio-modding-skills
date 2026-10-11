@@ -47,7 +47,9 @@ it needs and whether `api.py lookup` confirms they exist in the installed game v
 ## Score it
 
 Score feasibility, fun and effort from 1 to 5 with evidence for each, as defined in
-[design-scorecard.md](../factorio-toolkit/references/design-scorecard.md). Show the scorecard to the user. When it recommends not building
+[design-scorecard.md](../factorio-toolkit/references/design-scorecard.md). The fun evidence states all three of progression (where
+the mod enters the game), replayability (what changes on a second playthrough) and novelty against the named similar mods; the
+effort evidence states counts and the graphics rung per asset. Write the scorecard in the final answer, not only in notes. Show it to the user. When it recommends not building
 (a duplicate exists, feasibility is 1 or 2), say that plainly and stop without writing a manifest, unless the user asks to continue.
 
 ## Design document (only with `--design-doc`)
