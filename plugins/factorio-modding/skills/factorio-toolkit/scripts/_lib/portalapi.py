@@ -26,6 +26,7 @@ import httpx2
 from .creds import ENV_TOKEN, ENV_USERNAME, Credentials
 from .errors import ToolkitError
 from .http import DEFAULT_POLICY, JsonObject, RetryPolicy, fail, json_object, send, write_atomic
+from .versions import loose_version_key
 
 BASE_URL = "https://mods.factorio.com"
 AUTH_HINT = (
@@ -98,10 +99,6 @@ class Downloaded:
     licence_files: list[str]
 
 
-def version_key(version: str) -> tuple[int, ...]:
-    return tuple(int(part) if part.isdigit() else 0 for part in re.split(r"[.\-]", version))
-
-
 def releases_of(mod: ModEntry) -> list[Release]:
     """Every release the entry carries: `releases`, or the single `latest_release` object."""
     if mod.get("releases"):
@@ -113,7 +110,7 @@ def releases_of(mod: ModEntry) -> list[Release]:
 def newest_release(releases: list[Release], factorio_version: str | None = None) -> Release | None:
     """The highest mod version, optionally only among releases declaring `factorio_version` (such as `2.0`)."""
     pool = [r for r in releases if factorio_version is None or r.get("info_json", {}).get("factorio_version") == factorio_version]
-    return max(pool, key=lambda r: (version_key(r.get("version", "0")), r.get("released_at", "")), default=None)
+    return max(pool, key=lambda r: (loose_version_key(r.get("version", "0")), r.get("released_at", "")), default=None)
 
 
 def pick_release(mod: str, releases: list[Release], version: str | None, factorio_version: str | None) -> Release:
@@ -122,7 +119,7 @@ def pick_release(mod: str, releases: list[Release], version: str | None, factori
         for release in releases:
             if release.get("version") == version:
                 return release
-        have = ", ".join(r.get("version", "?") for r in sorted(releases, key=lambda r: version_key(r.get("version", "0")))[-8:])
+        have = ", ".join(r.get("version", "?") for r in sorted(releases, key=lambda r: loose_version_key(r.get("version", "0")))[-8:])
         raise ToolkitError(f"mod {mod!r} has no release {version}.", f"releases include: {have}. Omit --version for the newest.")
     chosen = newest_release(releases, factorio_version)
     if chosen is None:

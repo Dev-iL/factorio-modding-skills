@@ -55,11 +55,15 @@ def read_source_series(mod_dir: Path) -> str:
     if not info.is_file():
         raise Refused(f"{mod_dir} has no info.json; pass the folder that contains the mod's info.json")
     try:
-        declared = json.loads(info.read_text("utf-8-sig")).get("factorio_version")
+        data = json.loads(info.read_text("utf-8-sig"))
+    except (OSError, UnicodeDecodeError) as exc:
+        raise Refused(f"cannot read {info} ({exc}); check the file's permissions and that it is UTF-8 text") from exc
     except json.JSONDecodeError as exc:
         raise Refused(f"{info} is not valid JSON ({exc}); fix it and re-run") from exc
+    if not isinstance(data, dict):
+        raise Refused(f"{info} must hold a JSON object with the mod's name and version; fix it and re-run")
     # info.json omits factorio_version for 0.x-era mods; Factorio then assumes 0.12.
-    return str(declared) if declared else "0.12"
+    return str(data.get("factorio_version") or "0.12")
 
 
 def check(source_series: str, target_text: str) -> Verdict:

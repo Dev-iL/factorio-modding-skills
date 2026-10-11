@@ -129,3 +129,20 @@ def test_cached_download_never_stores_a_payload_that_fails_validation(tmp_path: 
     with pytest.raises(ToolkitError):
         cached_download(client, "https://example.test/doc.json", dest, what="doc", validate=reject)
     assert not dest.exists() and list(tmp_path.iterdir()) == []
+
+
+def test_5xx_answers_are_retried_with_backoff_then_succeed() -> None:
+    answers = iter([503, 503, 200])
+    client = client_for(lambda req: httpx2.Response(next(answers), json={"ok": True}))
+    slept: list[float] = []
+    assert send(client, "GET", "https://example.test/x", what="x", policy=policy(slept)).status_code == 200
+    assert slept == [1.0, 2.0]
+
+
+def test_persistent_5xx_gives_up_naming_the_status_and_attempts() -> None:
+    client = client_for(lambda req: httpx2.Response(503))
+    slept: list[float] = []
+    with pytest.raises(ToolkitError) as info:
+        send(client, "GET", "https://example.test/x", what="the list", policy=policy(slept, max_attempts=3))
+    assert "HTTP 503" in info.value.message and "3 attempts" in info.value.message
+    assert slept == [1.0, 2.0]

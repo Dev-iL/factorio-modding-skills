@@ -31,6 +31,7 @@ from PIL import Image
 
 from _lib.blender import find_blender
 from _lib.errors import ToolkitError, cli_main
+from _lib.logscan import format_log_tail
 
 # Sprite limits, Factorio 2.1.21 prototype docs (https://lua-api.factorio.com/2.1.21/):
 #   one frame/sprite: width and height 0-4096 px  (types/SpriteSource.html#width, types/AnimationParameters.html#width)
@@ -280,7 +281,7 @@ def run_blender(blender: Path, params: Mapping[str, object], work: Path, timeout
         raise ToolkitError(f"could not start {blender}: {exc}", "check BLENDER_PATH and that the executable is not blocked by antivirus.") from exc
     result_file = work / "result.json"
     if proc.returncode != 0 or not result_file.is_file():
-        excerpt = "\n".join(f"    | {line}" for line in (proc.stdout + proc.stderr).strip().splitlines()[-15:])
+        excerpt = format_log_tail((proc.stdout + proc.stderr).strip())
         raise ToolkitError(
             f"Blender exited with code {proc.returncode} before finishing the render. Last output:\n{excerpt}",
             "fix the error shown above (a model-script exception names its line); re-run with the same arguments.",

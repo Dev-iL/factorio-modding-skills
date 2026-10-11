@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+
 from _lib.apidiff import diff_docs
 
 from api_docs import prototype_new, prototype_old, runtime_new, runtime_old
@@ -43,3 +45,26 @@ def test_output_is_grouped_by_status_and_starts_with_a_summary() -> None:
 def test_identical_versions_produce_only_the_header() -> None:
     out = diff_docs("1", "1", runtime_old(), runtime_old(), prototype_old(), prototype_old())
     assert all(line.startswith("#") for line in out)
+
+
+def test_a_removed_member_of_a_surviving_class_and_a_retyped_attribute_are_reported() -> None:
+    old = runtime_old()
+    new = copy.deepcopy(old)
+    for cls in new["classes"]:
+        if cls["name"] == "LuaEntity":
+            cls["methods"] = [m for m in cls["methods"] if m["name"] != "create_thing"]
+        if cls["name"] == "LuaControl":
+            for attribute in cls["attributes"]:
+                attribute["read_type"] = "double"
+    out = diff_docs("1", "2", old, new, prototype_old(), prototype_old())
+    assert "REMOVED runtime method LuaEntity.create_thing: {amount?: uint32, name: string, force: string}" in out
+    assert "CHANGED runtime attribute LuaControl.health: float (read-write) -> read double / write float (read-write)" in out
+
+
+def test_a_removed_define_value_is_reported() -> None:
+    old = runtime_old()
+    new = copy.deepcopy(old)
+    values = new["defines"][0]["values"]
+    removed = values.pop()
+    out = diff_docs("1", "2", old, new, prototype_old(), prototype_old())
+    assert any(line.startswith("REMOVED runtime define") and removed["name"] in line for line in out)

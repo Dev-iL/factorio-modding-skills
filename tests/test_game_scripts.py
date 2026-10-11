@@ -125,6 +125,19 @@ def test_failing_runtime_assertion_is_a_control_stage_failure(install: GameInsta
     assert "[control stage] fms-broken-runtime: control.lua:2" in out and "fms-does-not-exist" in out
 
 
+def test_error_in_a_required_runtime_file_shows_the_console_error(install: GameInstall, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    mod = tmp_path / "fms-reqerr"
+    mod.mkdir()
+    (mod / "info.json").write_text(
+        '{"name": "fms-reqerr", "version": "0.1.0", "title": "t", "author": "a", "factorio_version": "2.1", "dependencies": ["base"]}', "utf-8"
+    )
+    (mod / "control.lua").write_text('require("boost")', "utf-8")
+    (mod / "boost.lua").write_text('error("boom from boost")', "utf-8")
+    code, out = run_cli(run_tests, ["--mod", str(mod)], capsys)
+    assert code == 1
+    assert "boom from boost" in out and "boost.lua:1" in out
+
+
 def test_mod_that_reports_no_tests_fails(install: GameInstall, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     mod = tmp_path / "fms-silent"
     mod.mkdir()

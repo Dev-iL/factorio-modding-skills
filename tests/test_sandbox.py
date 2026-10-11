@@ -99,3 +99,36 @@ def test_remove_link_leaves_real_directories_alone(tmp_path: Path) -> None:
     real = make_mod(tmp_path / "real", "real", ["base"])
     remove_link(real)
     assert (real / "info.json").exists()
+
+
+def test_a_link_that_cannot_be_removed_keeps_the_sandbox_and_the_mod(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    install = fake_install(tmp_path / "game")
+    mod = make_mod(tmp_path / "mymod", "mymod", ["base"])
+
+    def refuse(link: Path) -> None:
+        raise PermissionError("in use")
+
+    monkeypatch.setattr("_lib.sandbox.remove_link", refuse)
+    with sandbox(install, [mod]) as (box, _):
+        root = box.root
+    try:
+        assert root.exists(), "never rmtree a sandbox whose link is still in place"
+        assert (mod / "info.json").exists() and (mod / "data.lua").exists()
+        assert "could not remove link" in capsys.readouterr().err
+    finally:
+        monkeypatch.undo()
+        remove_link(root / "mods" / "mymod")
+        import shutil
+
+        shutil.rmtree(root)
+
+
+def test_sandbox_refuses_to_sit_inside_the_games_own_data_folder(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    tmp_root = tmp_path / "temp"
+    tmp_root.mkdir()
+    monkeypatch.setattr("tempfile.tempdir", str(tmp_root))
+    install = fake_install(tmp_path / "game", write_data=tmp_root)
+    mod = make_mod(tmp_path / "mymod", "mymod", ["base"])
+    with pytest.raises(ToolkitError, match="inside the game's own data folder"), sandbox(install, [mod]):
+        pass
+    assert not list(tmp_root.glob("fm-sandbox-*"))

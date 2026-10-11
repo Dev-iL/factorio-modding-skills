@@ -18,7 +18,7 @@ from collections.abc import Sequence
 
 from _lib.args import add_sandbox_args, require_mod_dirs
 from _lib.errors import EXIT_FAILED, cli_main
-from _lib.gamerun import GameResult, run_game, save_log
+from _lib.gamerun import GameResult, describe_unrecognised_exit, run_game, save_log
 from _lib.logscan import Finding, TestResult, format_finding, scan_log
 from _lib.paths import locate_game
 from _lib.sandbox import sandbox
@@ -58,14 +58,13 @@ def main(argv: Sequence[str]) -> int:
         print(format_finding(finding))
     for failed in failed_launches:
         if not findings:
-            tail = "\n".join(f"    | {ln}" for ln in failed.log.splitlines()[-15:])
-            print(f"game exited with code {failed.exit_code} ({failed.args[0]}) without a recognised error; end of log:\n{tail}")
+            print(describe_unrecognised_exit(failed))
     for test in tests:
         print(f"{'PASS' if test.passed else 'FAIL'} test: {test.name}")
     failed_tests = [t for t in tests if not t.passed]
     if findings or failed_launches or failed_tests:
         print(f"FAIL in-game tests: {names} ({len(findings)} error(s), {len(failed_tests)} failed test(s))")
-        print("next step: fix the first error or failed test above (the log excerpt names the stage and file), then run run_tests.py again")
+        print("next step: fix the first error or failed test shown above, then run run_tests.py again")
         return EXIT_FAILED
     if not tests:
         print(f"FAIL in-game tests: {names} reported no results; the mod's control.lua must log `[FMS-TEST] PASS <name>` lines (see references/in-game-testing.md)")

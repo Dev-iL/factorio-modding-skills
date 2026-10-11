@@ -24,6 +24,7 @@ from pathlib import Path
 
 from _lib.errors import ToolkitError, cli_main
 from _lib.paths import locate_game
+from _lib.versions import version_key
 
 VERSION_LINE = re.compile(r"^Version:\s*(\d+(?:\.\d+)*)\s*$")
 DATE_LINE = re.compile(r"^Date:\s*(.*?)\s*$")
@@ -37,10 +38,6 @@ class Release:
     version: str
     date: str = ""
     sections: dict[str, list[str]] = field(default_factory=dict)
-
-
-def version_key(version: str) -> tuple[int, ...]:
-    return tuple(int(part) for part in version.split("."))
 
 
 def parse_changelog(text: str) -> list[Release]:

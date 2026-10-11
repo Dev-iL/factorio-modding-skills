@@ -20,7 +20,7 @@ from pathlib import Path
 
 from _lib.args import add_sandbox_args, require_mod_dirs
 from _lib.errors import EXIT_FAILED, ToolkitError, cli_main
-from _lib.gamerun import GameResult, run_game, run_game_until_error, save_log
+from _lib.gamerun import GameResult, describe_unrecognised_exit, run_game, run_game_until_error, save_log
 from _lib.logscan import format_finding, scan_log
 from _lib.paths import GameInstall, locate_game
 from _lib.sandbox import Sandbox, sandbox
@@ -67,8 +67,7 @@ def _print_failure(result: GameResult, problems: list[str]) -> None:
     for text in problems:
         print(text)
     if not problems:
-        tail = "\n".join(f"    | {ln}" for ln in result.log.splitlines()[-15:])
-        print(f"game exited with code {result.exit_code} without a recognised error; end of log:\n{tail}")
+        print(describe_unrecognised_exit(result))
 
 
 def main(argv: Sequence[str]) -> int:
@@ -98,7 +97,7 @@ def main(argv: Sequence[str]) -> int:
         if result.exit_code != 0 or problems:
             _print_failure(result, problems)
             print(f"FAIL data stage: {names} (game exit code {result.exit_code})")
-            print("next step: fix the first error above (the log excerpt names the file or prototype), then run check_data.py again")
+            print("next step: fix the first error shown above, then run check_data.py again")
             return EXIT_FAILED
         not_loaded = sorted({i.name for i in infos} - _loaded_mods(result.log))
         if not_loaded:

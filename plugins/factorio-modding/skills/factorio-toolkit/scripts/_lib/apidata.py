@@ -17,17 +17,13 @@ from typing import cast
 import httpx2
 
 from . import paths
-from .apimodel import API_VERSION, STAGES, PrototypeDoc, RuntimeDoc, Stage
+from .apimodel import API_VERSION, PrototypeDoc, RuntimeDoc, Stage
 from .errors import ToolkitError
 from .http import DEFAULT_POLICY, RetryPolicy, cached_download, fail, parse_json_bytes, send, write_atomic
 
 BASE_URL = "https://lua-api.factorio.com"
 LATEST_TTL_SECONDS = 24 * 3600
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
-
-
-def version_key(version: str) -> tuple[int, ...]:
-    return tuple(int(part) for part in version.split("."))
 
 
 def _check_document(data: bytes, stage: Stage, what: str) -> None:
@@ -138,4 +134,4 @@ class ApiStore:
         return cast(PrototypeDoc, parse_json_bytes(self._load(version, "prototype", refresh), str(self.path(version, "prototype"))))
 
 
-__all__ = ["ApiStore", "BASE_URL", "STAGES", "version_key"]
+__all__ = ["ApiStore", "BASE_URL"]

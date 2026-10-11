@@ -22,7 +22,8 @@ import httpx2
 from _lib.creds import ALLOW_FLAG, Credentials, get_credentials
 from _lib.errors import ToolkitError, cli_main
 from _lib.http import make_client
-from _lib.portalapi import BASE_URL, ModEntry, ModPage, Portal, newest_release, pick_release, releases_of, version_key
+from _lib.portalapi import BASE_URL, ModEntry, ModPage, Portal, newest_release, pick_release, releases_of
+from _lib.versions import loose_version_key
 
 SORT_KEYS = ("name", "created_at", "updated_at")  # `downloads_count` is accepted by the portal but ignored (verified live)
 
@@ -113,7 +114,7 @@ def info_lines(mod: ModEntry, factorio_version: str | None, all_releases: bool) 
         lines.append(f"no release for Factorio {factorio_version}")
     lines.append(f"releases: {len(releases)} ({', '.join(f'factorio {k}: {v}' for k, v in sorted(by_factorio.items()))})")
     if all_releases:
-        for r in sorted(releases, key=lambda r: version_key(r.get("version", "0"))):
+        for r in sorted(releases, key=lambda r: loose_version_key(r.get("version", "0"))):
             lines.append(f"  release {r.get('version')}  factorio={r.get('info_json', {}).get('factorio_version', '?')}  {r.get('released_at', '')[:10]}")
     return lines
 

@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .errors import ToolkitError
+from .logscan import format_log_tail
 from .paths import GameInstall
 from .sandbox import Sandbox
 
@@ -75,6 +76,15 @@ def run_game_until_error(install: GameInstall, box: Sandbox, args: Sequence[str]
         proc.wait()
     exit_code = proc.returncode if not timed_out and proc.returncode is not None else -1
     return GameResult(args=tuple(args), exit_code=exit_code, output="", log=_read_log(box), timed_out=timed_out)
+
+
+def describe_unrecognised_exit(result: GameResult) -> str:
+    """Say that the game exited non-zero with nothing the log scanner recognises, and show what it printed.
+
+    A mod that fails while the map loads can report its error on the console only, so the console output wins over the log.
+    """
+    text = result.output if result.output.strip() else result.log
+    return f"game exited with code {result.exit_code} ({result.args[0]}) without a recognised error; end of its output:\n{format_log_tail(text)}"
 
 
 def save_log(directory: Path | None, label: str, result: GameResult) -> None:

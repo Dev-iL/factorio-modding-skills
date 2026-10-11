@@ -128,6 +128,11 @@ def scan_log(text: str, *, unused_is_error: bool = True) -> ScanResult:
     return result
 
 
+def format_log_tail(text: str, lines: int = 15) -> str:
+    """The last `lines` lines of a log or console output, quoted, for a failure with no recognised error."""
+    return "\n".join(f"    | {line}" for line in text.splitlines()[-lines:])
+
+
 def format_finding(finding: Finding, log_name: str = "factorio-current.log") -> str:
     """Render a finding as stage, location and the relevant log excerpt."""
     head = f"{finding.severity.upper()} [{finding.stage} stage] {finding.where or 'unlocated'}: {finding.message}"

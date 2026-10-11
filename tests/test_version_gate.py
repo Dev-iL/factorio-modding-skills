@@ -87,3 +87,12 @@ def test_json_output(tmp_path: Path) -> None:
         capture_output=True, text=True, check=False,
     )
     assert json.loads(result.stdout) == {"source_series": "2.0", "source_baseline": "2.0.77", "target": "2.1.21"}
+
+
+def test_unreadable_or_non_object_info_json_is_a_refusal_not_a_traceback(tmp_path: Path) -> None:
+    (tmp_path / "info.json").write_text("[]", "utf-8")
+    listed = run(tmp_path, "2.1.21")
+    assert listed.returncode == 2 and "must hold a JSON object" in listed.stderr and "Traceback" not in listed.stderr
+    (tmp_path / "info.json").write_bytes(bytes([0xFF, 0xFE, 0x00, 0x62]))
+    binary = run(tmp_path, "2.1.21")
+    assert binary.returncode == 2 and "cannot read" in binary.stderr and "Traceback" not in binary.stderr
