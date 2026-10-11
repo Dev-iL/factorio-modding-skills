@@ -47,8 +47,8 @@ def run_game(install: GameInstall, box: Sandbox, args: Sequence[str], timeout: f
     return GameResult(args=tuple(args), exit_code=proc.returncode, output=proc.stdout + proc.stderr, log=_read_log(box))
 
 
-def run_game_until_error(install: GameInstall, box: Sandbox, args: Sequence[str], timeout: float) -> GameResult:
-    """Launch the game with a window and stop it as soon as its log shows an error, or after `timeout`.
+def run_game_until_error(install: GameInstall, box: Sandbox, args: Sequence[str], timeout: float, done_marker: str | None = None) -> GameResult:
+    """Launch the game with a window and stop it as soon as its log shows an error, shows `done_marker`, or after `timeout`.
 
     A sprite error leaves the game on a dialog that nobody will click, so waiting for an exit would only burn the timeout.
     The result has `timed_out=True` when the game was stopped for running too long.
@@ -62,7 +62,8 @@ def run_game_until_error(install: GameInstall, box: Sandbox, args: Sequence[str]
     timed_out = False
     try:
         while proc.poll() is None:
-            if _ERROR_LINE.search(_read_log(box)):
+            log = _read_log(box)
+            if _ERROR_LINE.search(log) or (done_marker and done_marker in log):
                 break
             if time.monotonic() > deadline:
                 timed_out = True

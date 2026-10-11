@@ -42,18 +42,21 @@ def _check_dump(dump: Path, expected: Sequence[str]) -> tuple[int, list[str]]:
     return len(raw), missing
 
 
-GRAPHICS_TIMEOUT = 150
+GRAPHICS_TIMEOUT = 240
+SPRITES_LOADED = "Sprites loaded"
 
 
 def _graphics_load_ok(install: GameInstall, box: Sandbox, args: argparse.Namespace, names: str) -> bool:
-    """Start the game with a window just long enough to load every sprite; a sprite error stops it at once."""
-    result = run_game_until_error(install, box, ["--dump-icon-sprites", "--window-size", "800x600"], min(args.timeout, GRAPHICS_TIMEOUT))
+    """Start the game with a window just long enough to load every sprite; the first sprite error, or the end of loading, stops it."""
+    result = run_game_until_error(
+        install, box, ["--dump-icon-sprites", "--window-size", "800x600"], min(args.timeout, GRAPHICS_TIMEOUT), SPRITES_LOADED
+    )
     save_log(args.log_dir, "check-data-graphics", result)
     scan = scan_log(result.log, unused_is_error=not args.allow_unused)
     for finding in scan.errors:
         print(format_finding(finding))
-    if scan.errors or result.timed_out or result.exit_code != 0 or "Sprites loaded" not in result.log:
-        reason = "a sprite error stopped the game" if scan.errors else ("the game did not finish loading sprites in time" if result.timed_out else f"game exit code {result.exit_code}")
+    if scan.errors or SPRITES_LOADED not in result.log:
+        reason = "a sprite error stopped the game" if scan.errors else ("the game did not finish loading sprites in time" if result.timed_out else f"the game exited with code {result.exit_code} before loading sprites")
         print(f"FAIL graphics load: {names}: {reason}")
         return False
     return True
