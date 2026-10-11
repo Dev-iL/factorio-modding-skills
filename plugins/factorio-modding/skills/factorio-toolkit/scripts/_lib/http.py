@@ -164,6 +164,8 @@ def send(
                 ) from exc
             policy.sleep(policy.delay(attempt))
             continue
+        except httpx2.TooManyRedirects as exc:
+            raise fail(f"the request for {what} was redirected in a loop ({exc}).", "check the name you passed; if it is right, the service may be misbehaving, so try again later.", secrets=secrets) from exc
         except httpx2.InvalidURL as exc:
             raise fail(f"invalid URL for {what}: {exc}", "check the name or version you passed.", secrets=secrets) from exc
         if response.status_code < 400:

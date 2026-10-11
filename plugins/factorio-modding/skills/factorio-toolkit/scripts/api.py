@@ -63,8 +63,9 @@ def _resolve_lookup_version(store: ApiStore, spec: str, refresh: bool) -> str:
     try:
         return store.resolve("installed")
     except ToolkitError as exc:
-        print(f"note: {exc.message} Using the latest version listed on lua-api.factorio.com instead.", file=sys.stderr)
-        return store.resolve("latest", refresh=refresh)
+        latest = store.resolve("latest", refresh=refresh)
+        print(f"note: {exc.message} Answering from the latest version listed on lua-api.factorio.com ({latest}), which may differ from the game you run; pass --version to choose.", file=sys.stderr)
+        return latest
 
 
 def _load(store: ApiStore, version: str, stage: str, refresh: bool) -> Docs:

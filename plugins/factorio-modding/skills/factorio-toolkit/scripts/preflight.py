@@ -20,6 +20,7 @@ import shutil
 import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from _lib.blender import find_blender
 from _lib.errors import EXIT_USAGE, ToolkitError, cli_main
@@ -41,7 +42,13 @@ class Check:
 
 
 def _run(command: Sequence[str], env: Mapping[str, str], timeout: float = 60) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(list(command), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, check=False, env=dict(env))
+    """Run a command; a hang or a launch failure comes back as a failed result so the other checks still run."""
+    try:
+        return subprocess.run(list(command), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, check=False, env=dict(env))
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(list(command), 124, "", f"`{Path(command[0]).stem} {' '.join(command[1:])}` did not answer within {timeout:.0f}s")
+    except OSError as exc:
+        return subprocess.CompletedProcess(list(command), 127, "", f"could not start {command[0]}: {exc}")
 
 
 def check_uv(env: Mapping[str, str]) -> Check:
@@ -88,7 +95,9 @@ def detect_host(requested: str, env: Mapping[str, str]) -> str:
         return "claude"
     if any(key.startswith("CODEX_") for key in env):
         return "codex"
-    return "claude" if shutil.which("claude") else "codex"
+    if shutil.which("claude"):
+        return "claude"
+    return "codex" if shutil.which("codex") else "none"
 
 
 def _manifest_dev_in_claude(env: Mapping[str, str]) -> bool:
@@ -110,6 +119,8 @@ def _manifest_dev_in_codex(env: Mapping[str, str]) -> bool:
 
 
 def check_manifest_dev(host: str, env: Mapping[str, str]) -> Check:
+    if host == "none":
+        return Check("manifest-dev", False, "neither the `claude` nor the `codex` CLI is on PATH, so the plugin list cannot be read", "put your host's CLI on PATH, or pass --host claude|codex")
     cli = "claude" if host == "claude" else "codex"
     install = CLAUDE_INSTALL if host == "claude" else CODEX_INSTALL
     if shutil.which(cli) is None:

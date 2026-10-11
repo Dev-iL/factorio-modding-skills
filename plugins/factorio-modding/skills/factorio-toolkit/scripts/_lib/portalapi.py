@@ -229,12 +229,15 @@ class Portal:
         expected = release.get("sha1", "")
         if expected and hashlib.sha1(data).hexdigest() != expected:
             raise ToolkitError(f"the downloaded zip of {mod} {version} does not match the portal's sha1.", "run the download again.")
-        dest.mkdir(parents=True, exist_ok=True)
         zip_path = dest / Path(release.get("file_name") or f"{mod}_{version}.zip").name
-        write_atomic(zip_path, data)
-        if target.exists():
-            shutil.rmtree(target)
-        files = unpack_zip(data, target)
+        try:
+            dest.mkdir(parents=True, exist_ok=True)
+            write_atomic(zip_path, data)
+            if target.exists():
+                shutil.rmtree(target)
+            files = unpack_zip(data, target)
+        except OSError as exc:
+            raise ToolkitError(f"could not save the download of {mod} {version} under {dest}: {exc}", "pass a --dest folder that you can write to and that is not an existing file.") from exc
         licences = sorted(p.name for p in target.iterdir() if p.is_file() and re.match(r"(?i)(licen[sc]e|copying|copyright)", p.name))
         return Downloaded(mod, release, zip_path, target, files, licences)
 

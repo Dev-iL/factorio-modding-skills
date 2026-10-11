@@ -98,6 +98,7 @@ def main(argv: Sequence[str]) -> int:
         if result.exit_code != 0 or problems:
             _print_failure(result, problems)
             print(f"FAIL data stage: {names} (game exit code {result.exit_code})")
+            print("next step: fix the first error above (the log excerpt names the file or prototype), then run check_data.py again")
             return EXIT_FAILED
         not_loaded = sorted({i.name for i in infos} - _loaded_mods(result.log))
         if not_loaded:

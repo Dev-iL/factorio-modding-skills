@@ -101,3 +101,19 @@ def test_blender_check_uses_the_shared_finder(tmp_path) -> None:
     assert preflight.check_blender({"BLENDER_PATH": str(exe)}).ok
     missing = preflight.check_blender({"BLENDER_PATH": str(tmp_path / "gone.exe")})
     assert not missing.ok and "BLENDER_PATH" in missing.detail
+
+
+def test_a_hung_host_cli_is_reported_as_a_failed_check(monkeypatch: pytest.MonkeyPatch) -> None:
+    def hang(*args: object, **kwargs: object) -> None:
+        raise subprocess.TimeoutExpired("claude", 60)
+
+    monkeypatch.setattr(preflight.subprocess, "run", hang)
+    check = preflight.check_manifest_dev("claude", {})
+    assert not check.ok and "did not answer" in check.detail
+
+
+def test_no_host_cli_on_path_names_both(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+    assert preflight.detect_host("auto", {}) == "none"
+    check = preflight.check_manifest_dev("none", {})
+    assert not check.ok and "claude" in check.detail and "codex" in check.detail

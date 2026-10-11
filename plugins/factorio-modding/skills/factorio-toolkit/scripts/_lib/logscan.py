@@ -74,7 +74,9 @@ def _locate(body: str) -> tuple[str, Stage]:
     stage: Stage = "unknown"
     if file_match:
         where = f"{file_match['mod']}: {file_match['file']}:{file_match['line']}"
-        stage = "data" if file_match["file"].rsplit("/", 1)[-1] in _DATA_FILES else "control"
+        top_level = file_match["file"].rsplit("/", 1)[-1] if "/" not in file_match["file"] else ""
+        # A required module (`prototypes/item.lua`) can run in either stage: leave it to the caller's initialised check.
+        stage = "data" if top_level in _DATA_FILES else ("control" if top_level == "control.lua" else "unknown")
     proto = _PROTOTYPE.search(body)
     if proto:
         where = f"{proto['kind']} prototype '{proto['name']}'"

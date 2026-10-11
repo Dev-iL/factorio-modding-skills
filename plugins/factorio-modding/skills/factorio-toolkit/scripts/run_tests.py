@@ -65,6 +65,7 @@ def main(argv: Sequence[str]) -> int:
     failed_tests = [t for t in tests if not t.passed]
     if findings or failed_launches or failed_tests:
         print(f"FAIL in-game tests: {names} ({len(findings)} error(s), {len(failed_tests)} failed test(s))")
+        print("next step: fix the first error or failed test above (the log excerpt names the stage and file), then run run_tests.py again")
         return EXIT_FAILED
     if not tests:
         print(f"FAIL in-game tests: {names} reported no results; the mod's control.lua must log `[FMS-TEST] PASS <name>` lines (see references/in-game-testing.md)")

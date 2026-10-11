@@ -131,3 +131,11 @@ def test_list_page_size_must_be_a_positive_number_or_max(site: FakePortal, capsy
         portal.main(["list", "--page-size", "abc"])
     assert bad.value.code == 2 and "not a positive number or `max`" in capsys.readouterr().err
     assert "# page" in run(capsys, "list", "--page-size", "max")
+
+
+def test_download_into_a_path_that_is_a_file_names_the_cause(site: FakePortal, tmp_path: Path) -> None:
+    blocker = tmp_path / "not-a-folder"
+    blocker.write_text("occupied", "utf-8")
+    with pytest.raises(ToolkitError, match="could not save the download") as err:
+        portal.main(["download", "tiny-mod", "--factorio-version", "2.0", "--dest", str(blocker)])
+    assert "--dest" in (err.value.hint or "")

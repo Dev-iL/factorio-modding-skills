@@ -145,7 +145,7 @@ def locate_game(explicit: str | Path | None = None, env: Mapping[str, str] | Non
         root = _normalise_root(raw)
         if not _is_install(root):
             raise ToolkitError(
-                f"{source} is {raw!r}, but there is no {EXE_RELATIVE} under {root}.",
+                f"{source} is '{raw}', but there is no {EXE_RELATIVE} under {root}.",
                 f"point {source} at the folder that contains bin/x64/factorio.exe ({README_ANCHOR}).",
             )
         return resolve_install(root, env)

@@ -80,3 +80,20 @@ def test_error_without_a_file_is_data_stage_before_initialisation_and_control_af
     before = scan_log("   0.500 Error Foo.cpp:1: mystery\n")
     after = scan_log("   0.500 Factorio initialised\n   0.600 Error Foo.cpp:1: mystery\n")
     assert before.errors[0].stage == "data" and after.errors[0].stage == "control"
+
+
+def test_error_in_a_required_data_module_is_data_stage() -> None:
+    log = HEAD + """   1.700 Error Util.cpp:81: Failed to load mod "fms-x": __fms-x__/prototypes/item.lua:2: boom
+"""
+    [finding] = scan_log(log).errors
+    assert finding.stage == "data" and finding.where == "fms-x: prototypes/item.lua:2"
+
+
+def test_error_in_a_required_runtime_module_is_control_stage() -> None:
+    log = (
+        "   0.500 Factorio initialised\n"
+        "   0.900 Error Util.cpp:81: The mod X caused a non-recoverable error.\n"
+        "__fms-x__/boost.lua:9: boom\n"
+    )
+    [finding] = scan_log(log).errors
+    assert finding.stage == "control"
