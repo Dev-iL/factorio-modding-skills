@@ -140,14 +140,16 @@ def scan_console(text: str) -> list[Finding]:
     """
     lines = text.splitlines()
     findings: list[Finding] = []
+    consumed_until = 0  # the game prints a crash as several `Error` lines in a row; report them as one finding
     for index, line in enumerate(lines):
-        if not line.startswith(("Error:", "Error while")):
+        if index < consumed_until or not line.startswith(("Error:", "Error while")):
             continue
         block = []
         for follow in lines[index : index + _CONSOLE_FRAME_LINES]:
             if follow.startswith("-----") or _ENTRY.match(follow):
                 break
             block.append(follow)
+        consumed_until = index + len(block)
         body = chr(10).join(block).strip()
         where, stage = _locate(body)
         message = next((ln.strip() for ln in block[1:] if _FILE.search(ln)), block[0].strip())

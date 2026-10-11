@@ -43,7 +43,7 @@ Each of these was observed on live responses from `mods.factorio.com`:
 
 An image model cannot produce the same object from four or eight directions with a consistent shadow, scale, and
 animation frames, which a Factorio sprite sheet needs. Jaer985/factorio-modding-skill records that its author tried AI
-icon generation and discarded it (`references/dmr-icon-assets-generation.md`, MIT). This project has ruled AI image
+icon generation and discarded it (`references/dmr-icon-assets-generation.md`, MIT). This repository has ruled AI image
 generation out. Use base-game sprites with a tint, Blender renders of a model built for the task, or art the user
 supplies (see [graphics-ladder.md](graphics-ladder.md)).
 

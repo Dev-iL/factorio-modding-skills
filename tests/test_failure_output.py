@@ -60,3 +60,19 @@ def test_core_frames_do_not_hide_the_mods_own_frame() -> None:
     text = "Error: Invalid array of prototypes\n__core__/lualib/dataloader.lua:23: bad\n__fms-x__/data.lua:1: in main chunk\n"
     [finding] = scan_console(text)
     assert finding.where == "fms-x: data.lua:1" and finding.stage == "data"
+
+
+CONSOLE_CRASH = """\
+Error: The mod fms-x (0.1.0) caused a non-recoverable error.
+Please report this error to the mod author.
+
+Error while running event fms-x::on_init()
+__fms-x__/control.lua:1: attempt to index local 't' (a nil value)
+stack traceback:
+\t__fms-x__/control.lua:1: in function <__fms-x__/control.lua:1>
+"""
+
+
+def test_a_crash_printed_as_several_error_lines_is_one_finding() -> None:
+    [finding] = scan_console(CONSOLE_CRASH)
+    assert finding.where == "fms-x: control.lua:1" and "attempt to index" in finding.message

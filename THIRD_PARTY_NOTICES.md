@@ -5,8 +5,8 @@ projects or is derived from Wube Software's documentation. Files that adapt such
 
 ## chrisliebaer/factorio-modding-skill
 
-Source: [chrisliebaer/factorio-modding-skill](https://github.com/chrisliebaer/factorio-modding-skill). This project follows
-its approach of making the Factorio API documentation grep-friendly. Used under the MIT licence:
+Source: [chrisliebaer/factorio-modding-skill](https://github.com/chrisliebaer/factorio-modding-skill). This repository follows
+the approach of making the Factorio API documentation grep-friendly that the chrisliebaer repository takes. Used under the MIT licence:
 
 ```
 MIT License
@@ -83,7 +83,7 @@ THE DOCUMENTATION IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 
 ## TalShar783/Factorio-Modding-Skill
 
-Source: [TalShar783/Factorio-Modding-Skill](https://github.com/TalShar783/Factorio-Modding-Skill). Credited as inspiration. This project borrows five ideas from it:
+Source: [TalShar783/Factorio-Modding-Skill](https://github.com/TalShar783/Factorio-Modding-Skill). Credited as inspiration. This repository borrows five ideas from it:
 
 - preferring generated API stubs for lookups;
 - the caveat that parameter `order` matters;
