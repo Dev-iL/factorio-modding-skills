@@ -86,9 +86,15 @@ def _read_cfg_value(path: Path, key: str) -> str | None:
     return match.group(1) if match else None
 
 
+class _CaseSensitiveParser(configparser.RawConfigParser):
+    """config.ini keys are case-sensitive and use dashes; the stdlib parser lower-cases keys by default."""
+
+    def optionxform(self, optionstr: str) -> str:
+        return optionstr
+
+
 def _read_ini_paths(config_ini: Path) -> tuple[str | None, str | None]:
-    parser = configparser.RawConfigParser(strict=False, interpolation=None)
-    parser.optionxform = str  # keys are case-sensitive and use dashes
+    parser = _CaseSensitiveParser(strict=False, interpolation=None)
     parser.read(config_ini, encoding="utf-8")
     if not parser.has_section("path"):
         return None, None

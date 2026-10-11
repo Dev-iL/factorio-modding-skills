@@ -56,10 +56,10 @@ def main(argv: Sequence[str]) -> int:
 
     for finding in findings:
         print(format_finding(finding))
-    for launch in failed_launches:
+    for failed in failed_launches:
         if not findings:
-            tail = "\n".join(f"    | {ln}" for ln in launch.log.splitlines()[-15:])
-            print(f"game exited with code {launch.exit_code} ({launch.args[0]}) without a recognised error; end of log:\n{tail}")
+            tail = "\n".join(f"    | {ln}" for ln in failed.log.splitlines()[-15:])
+            print(f"game exited with code {failed.exit_code} ({failed.args[0]}) without a recognised error; end of log:\n{tail}")
     for test in tests:
         print(f"{'PASS' if test.passed else 'FAIL'} test: {test.name}")
     failed_tests = [t for t in tests if not t.passed]
