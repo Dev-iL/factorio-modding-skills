@@ -69,7 +69,9 @@ def _split_entries(text: str) -> list[tuple[float, str]]:
 
 def _locate(body: str) -> tuple[str, Stage]:
     """Name where a problem is (file:line in a mod, or the prototype) and which stage it belongs to."""
-    file_match = _FILE.search(body)
+    matches = list(_FILE.finditer(body))
+    # A traceback can start in the game's own `core` files (a data:extend call); name the mod's frame instead.
+    file_match = next((m for m in matches if m["mod"] != "core"), matches[0] if matches else None)
     where = ""
     stage: Stage = "unknown"
     if file_match:
@@ -128,6 +130,31 @@ def scan_log(text: str, *, unused_is_error: bool = True) -> ScanResult:
     return result
 
 
+_CONSOLE_FRAME_LINES = 12
+
+
+def scan_console(text: str) -> list[Finding]:
+    """Errors a failed launch printed on the console only. The game writes some load errors there and not to its log.
+
+    They arrive after the game started, so they count as control stage unless the traceback shows a data-stage file.
+    """
+    lines = text.splitlines()
+    findings: list[Finding] = []
+    for index, line in enumerate(lines):
+        if not line.startswith(("Error:", "Error while")):
+            continue
+        block = []
+        for follow in lines[index : index + _CONSOLE_FRAME_LINES]:
+            if follow.startswith("-----") or _ENTRY.match(follow):
+                break
+            block.append(follow)
+        body = chr(10).join(block).strip()
+        where, stage = _locate(body)
+        message = next((ln.strip() for ln in block[1:] if _FILE.search(ln)), block[0].strip())
+        findings.append(Finding("error", "control" if stage == "unknown" else stage, message, where, tuple(body.splitlines()), -1.0))
+    return findings
+
+
 def format_log_tail(text: str, lines: int = 15) -> str:
     """The last `lines` lines of a log or console output, quoted, for a failure with no recognised error."""
     return "\n".join(f"    | {line}" for line in text.splitlines()[-lines:])
@@ -137,4 +164,5 @@ def format_finding(finding: Finding, log_name: str = "factorio-current.log") -> 
     """Render a finding as stage, location and the relevant log excerpt."""
     head = f"{finding.severity.upper()} [{finding.stage} stage] {finding.where or 'unlocated'}: {finding.message}"
     body = "\n".join(f"    | {line}" for line in finding.excerpt)
-    return f"{head}\n  log excerpt ({log_name} @ {finding.log_time:.3f}s):\n{body}"
+    source = "console output" if finding.log_time < 0 else f"{log_name} @ {finding.log_time:.3f}s"
+    return f"{head}\n  log excerpt ({source}):\n{body}"

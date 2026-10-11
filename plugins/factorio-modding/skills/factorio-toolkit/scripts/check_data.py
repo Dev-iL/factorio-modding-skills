@@ -21,7 +21,7 @@ from pathlib import Path
 from _lib.args import add_sandbox_args, require_mod_dirs
 from _lib.errors import EXIT_FAILED, ToolkitError, cli_main
 from _lib.gamerun import GameResult, describe_unrecognised_exit, run_game, run_game_until_error, save_log
-from _lib.logscan import format_finding, scan_log
+from _lib.logscan import format_finding, scan_console, scan_log
 from _lib.paths import GameInstall, locate_game
 from _lib.sandbox import Sandbox, sandbox
 
@@ -91,7 +91,7 @@ def main(argv: Sequence[str]) -> int:
         scan = scan_log(result.log, unused_is_error=not args.allow_unused)
         dump = box.script_output / "data-raw-dump.json"
         names = ", ".join(f"{i.name} {i.version}" for i in infos)
-        problems = [format_finding(f) for f in scan.errors]
+        problems = [format_finding(f) for f in (scan.errors or scan_console(result.output))]
         if not problems and result.exit_code == 0 and not dump.is_file():
             problems.append(f"data-raw-dump.json was not written under {box.script_output}")
         if result.exit_code != 0 or problems:
