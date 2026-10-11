@@ -93,3 +93,11 @@ def test_main_exits_2_and_lists_each_failure(monkeypatch: pytest.MonkeyPatch, ca
     assert preflight.main([]) == 2
     out = capsys.readouterr().out
     assert "[FAIL] Factorio: not found" in out and "fix: set FACTORIO_PATH" in out and "PREFLIGHT FAILED: Factorio" in out
+
+
+def test_blender_check_uses_the_shared_finder(tmp_path) -> None:
+    exe = tmp_path / "blender.exe"
+    exe.write_bytes(b"")
+    assert preflight.check_blender({"BLENDER_PATH": str(exe)}).ok
+    missing = preflight.check_blender({"BLENDER_PATH": str(tmp_path / "gone.exe")})
+    assert not missing.ok and "BLENDER_PATH" in missing.detail

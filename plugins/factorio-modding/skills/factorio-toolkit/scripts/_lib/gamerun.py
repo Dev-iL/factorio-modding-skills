@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
-from pathlib import Path
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from .errors import ToolkitError
 from .paths import GameInstall
 from .sandbox import Sandbox
 
 DEFAULT_TIMEOUT = 600
+_ERROR_LINE = re.compile(r"^\s*\d+\.\d{3} Error ", re.M)
 
 
 @dataclass(frozen=True)
@@ -22,6 +25,11 @@ class GameResult:
     exit_code: int
     output: str
     log: str
+    timed_out: bool = False
+
+
+def _read_log(box: Sandbox) -> str:
+    return box.log_path.read_text("utf-8", errors="replace") if box.log_path.is_file() else ""
 
 
 def run_game(install: GameInstall, box: Sandbox, args: Sequence[str], timeout: float = DEFAULT_TIMEOUT) -> GameResult:
@@ -36,8 +44,36 @@ def run_game(install: GameInstall, box: Sandbox, args: Sequence[str], timeout: f
         ) from exc
     except OSError as exc:
         raise ToolkitError(f"could not start {install.exe}: {exc}", "check FACTORIO_PATH and that the executable is not blocked by antivirus.") from exc
-    log = box.log_path.read_text("utf-8", errors="replace") if box.log_path.is_file() else ""
-    return GameResult(args=tuple(args), exit_code=proc.returncode, output=proc.stdout + proc.stderr, log=log)
+    return GameResult(args=tuple(args), exit_code=proc.returncode, output=proc.stdout + proc.stderr, log=_read_log(box))
+
+
+def run_game_until_error(install: GameInstall, box: Sandbox, args: Sequence[str], timeout: float) -> GameResult:
+    """Launch the game with a window and stop it as soon as its log shows an error, or after `timeout`.
+
+    A sprite error leaves the game on a dialog that nobody will click, so waiting for an exit would only burn the timeout.
+    The result has `timed_out=True` when the game was stopped for running too long.
+    """
+    command = [str(install.exe), "-c", str(box.config_ini), "--mod-directory", str(box.mods_dir), *args]
+    try:
+        proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError as exc:
+        raise ToolkitError(f"could not start {install.exe}: {exc}", "check FACTORIO_PATH and that the executable is not blocked by antivirus.") from exc
+    deadline = time.monotonic() + timeout
+    timed_out = False
+    try:
+        while proc.poll() is None:
+            if _ERROR_LINE.search(_read_log(box)):
+                break
+            if time.monotonic() > deadline:
+                timed_out = True
+                break
+            time.sleep(1)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait()
+    exit_code = proc.returncode if not timed_out and proc.returncode is not None else -1
+    return GameResult(args=tuple(args), exit_code=exit_code, output="", log=_read_log(box), timed_out=timed_out)
 
 
 def save_log(directory: Path | None, label: str, result: GameResult) -> None:

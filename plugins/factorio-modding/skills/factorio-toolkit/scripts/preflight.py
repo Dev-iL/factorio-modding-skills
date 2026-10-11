@@ -21,6 +21,7 @@ import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+from _lib.blender import find_blender
 from _lib.errors import EXIT_USAGE, ToolkitError, cli_main
 from _lib.paths import game_version, locate_game
 
@@ -123,16 +124,10 @@ def check_manifest_dev(host: str, env: Mapping[str, str]) -> Check:
 
 
 def check_blender(env: Mapping[str, str]) -> Check:
-    path = env.get("BLENDER_PATH") or shutil.which("blender")
-    candidates = [path] if path else []
-    for root in (env.get("ProgramFiles", r"C:\Program Files"),):
-        base = os.path.join(root, "Blender Foundation")
-        if os.path.isdir(base):
-            candidates += [os.path.join(base, d, "blender.exe") for d in sorted(os.listdir(base), reverse=True)]
-    found = next((c for c in candidates if c and os.path.isfile(c)), None)
-    if found is None:
-        return Check("Blender", False, "no Blender found", "install Blender or set BLENDER_PATH to blender.exe (only needed for rendered sprites)")
-    return Check("Blender", True, found)
+    try:
+        return Check("Blender", True, str(find_blender(env)))
+    except ToolkitError as exc:
+        return Check("Blender", False, exc.message, exc.hint or "")
 
 
 def check_credentials(env: Mapping[str, str]) -> Check:

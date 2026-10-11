@@ -19,8 +19,9 @@ A failure names the stage (`data` or `control`), the file and line or the protot
   vanilla install logs none of these, so any such line belongs to the mod. Use `--allow-unused` to downgrade it.
 - `--expect type/name` (repeatable) also requires that prototype in `data.raw`, e.g. `--expect item/my-chest`.
 - `--dump-to FILE` copies the dump so the finished prototypes can be searched.
-- `--dump-data` does not read sprite files, so a wrong `filename` or size passes the data stage. Check graphics
-  separately (see [graphics-ladder.md](graphics-ladder.md)).
+- `--dump-data` does not read sprite files, so a wrong `filename` or sprite rectangle passes the data stage. `--graphics` adds a second
+  launch (`--dump-icon-sprites`, which loads every sprite) with a small game window for about 50 s; a missing file or an
+  out-of-range rectangle stops it with the error. Use it whenever the mod ships graphics (see [graphics-ladder.md](graphics-ladder.md)).
 
 ## Writing control-stage tests
 

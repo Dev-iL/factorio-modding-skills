@@ -20,10 +20,10 @@ from pathlib import Path
 
 from _lib.args import add_sandbox_args, require_mod_dirs
 from _lib.errors import EXIT_FAILED, ToolkitError, cli_main
-from _lib.gamerun import GameResult, run_game, save_log
+from _lib.gamerun import GameResult, run_game, run_game_until_error, save_log
 from _lib.logscan import format_finding, scan_log
-from _lib.paths import locate_game
-from _lib.sandbox import sandbox
+from _lib.paths import GameInstall, locate_game
+from _lib.sandbox import Sandbox, sandbox
 
 
 def _loaded_mods(log: str) -> set[str]:
@@ -42,6 +42,23 @@ def _check_dump(dump: Path, expected: Sequence[str]) -> tuple[int, list[str]]:
     return len(raw), missing
 
 
+GRAPHICS_TIMEOUT = 150
+
+
+def _graphics_load_ok(install: GameInstall, box: Sandbox, args: argparse.Namespace, names: str) -> bool:
+    """Start the game with a window just long enough to load every sprite; a sprite error stops it at once."""
+    result = run_game_until_error(install, box, ["--dump-icon-sprites", "--window-size", "800x600"], min(args.timeout, GRAPHICS_TIMEOUT))
+    save_log(args.log_dir, "check-data-graphics", result)
+    scan = scan_log(result.log, unused_is_error=not args.allow_unused)
+    for finding in scan.errors:
+        print(format_finding(finding))
+    if scan.errors or result.timed_out or result.exit_code != 0 or "Sprites loaded" not in result.log:
+        reason = "a sprite error stopped the game" if scan.errors else ("the game did not finish loading sprites in time" if result.timed_out else f"game exit code {result.exit_code}")
+        print(f"FAIL graphics load: {names}: {reason}")
+        return False
+    return True
+
+
 def _print_failure(result: GameResult, problems: list[str]) -> None:
     for text in problems:
         print(text)
@@ -55,6 +72,11 @@ def main(argv: Sequence[str]) -> int:
     add_sandbox_args(parser)
     parser.add_argument("--expect", action="append", default=[], metavar="TYPE/NAME", help="require this prototype in data.raw, e.g. item/my-item; repeatable")
     parser.add_argument("--allow-unused", action="store_true", help="do not fail on 'prototype value was not used' warnings")
+    parser.add_argument(
+        "--graphics", action="store_true",
+        help="also load every sprite (a second launch with `--dump-icon-sprites`; a small game window opens for about a minute). "
+        "--dump-data does not read sprite files, so a missing PNG or an out-of-range sprite rectangle passes without this",
+    )
     parser.add_argument("--dump-to", type=Path, metavar="FILE", help="copy data-raw-dump.json here so it can be searched")
     args = parser.parse_args(argv)
 
@@ -78,13 +100,15 @@ def main(argv: Sequence[str]) -> int:
             print(f"FAIL data stage: {', '.join(not_loaded)} never loaded; check the mod's info.json name and dependencies")
             return EXIT_FAILED
         types, missing = _check_dump(dump, args.expect)
+        if args.graphics and not _graphics_load_ok(install, box, args, names):
+            return EXIT_FAILED
         if args.dump_to:
             args.dump_to.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(dump, args.dump_to)
     if missing:
         print(f"FAIL data stage: {names} loaded, but data.raw lacks: {', '.join(missing)}")
         return EXIT_FAILED
-    print(f"PASS data stage: {names} loaded; game exit code 0; data-raw-dump.json parsed ({types} prototype types); no log errors")
+    print(f"PASS data stage: {names} loaded; game exit code 0; data-raw-dump.json parsed ({types} prototype types); no log errors" + ("; all sprites loaded" if args.graphics else ""))
     return 0
 
 

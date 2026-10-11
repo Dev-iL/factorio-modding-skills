@@ -8,8 +8,8 @@ Each template names its kind; `define` requires one on every gate.
 
 ## Per deliverable
 
-**Prototypes** (deterministic). Run `check_data.py --mod <mod> --expect <type>/<name> ...` listing every new prototype.
-Done when it exits 0. Unknown prototype properties and wrong value types fail it.
+**Prototypes** (deterministic). Run `check_data.py --mod <mod> --expect <type>/<name> ...` listing every new prototype, plus `--graphics`
+when the mod ships any sprite or icon. Done when it exits 0. Unknown prototype properties and wrong value types fail it.
 
 **Control scripts** (deterministic). Run `run_tests.py --mod <mod>`. Done when it exits 0 and prints one `PASS test:` line per
 behaviour the manifest lists. Each behaviour has a test that logs `[FMS-TEST] PASS|FAIL <name>` (see the toolkit's

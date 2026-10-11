@@ -93,6 +93,15 @@ def test_launch_logs_are_kept_in_log_dir_and_scan_clean(install: GameInstall, tm
     assert code == 0 and "PASS log scan" in out and "PASS test: item prototype exists at map creation" in out
 
 
+def test_graphics_flag_loads_sprites_and_catches_a_missing_file(install: GameInstall, capsys: pytest.CaptureFixture[str]) -> None:
+    code, out = run_cli(check_data, ["--mod", str(MODS / "fms-broken-graphics")], capsys)
+    assert code == 0, "the data stage alone does not read sprite files"
+    code, out = run_cli(check_data, ["--mod", str(MODS / "fms-broken-graphics"), "--graphics"], capsys)
+    assert code == 1 and "graphics/nope.png not found" in out and "FAIL graphics load" in out
+    code, out = run_cli(check_data, ["--mod", str(MODS / "fms-good"), "--graphics"], capsys)
+    assert code == 0 and "all sprites loaded" in out
+
+
 def test_in_game_test_passes_without_a_window(install: GameInstall, capsys: pytest.CaptureFixture[str]) -> None:
     code, out = run_cli(run_tests, ["--mod", str(MODS / "fms-good")], capsys)
     assert code == 0, out

@@ -1,0 +1,8 @@
+{
+  "name": "fms-broken-graphics",
+  "version": "0.1.0",
+  "title": "FMS missing icon",
+  "author": "factorio-modding-skills tests",
+  "factorio_version": "2.1",
+  "dependencies": ["base"]
+}
