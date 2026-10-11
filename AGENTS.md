@@ -28,9 +28,9 @@ Everything else mocks the network. Deselect a group with `-m "not game"`.
 
 - Claude Code, one session, no install: `claude --plugin-dir plugins/factorio-modding`. This needs `manifest-dev` installed too.
   To run a skill non-interactively, use `claude -p "/factorio-modding:design-mod <idea> --autonomous" --plugin-dir plugins/factorio-modding`.
-- Claude Code, installed: `claude plugin marketplace add <path to this repo>` then
+- Claude Code, installed: `claude plugin marketplace add <path to this repository>` then
   `claude plugin install factorio-modding@factorio-modding-skills`. Point `CLAUDE_CONFIG_DIR` at an empty folder to keep your own setup out of it.
-- Codex: `codex plugin marketplace add <path to this repo>` then `codex plugin add factorio-modding@factorio-modding-skills`.
+- Codex: `codex plugin marketplace add <path to this repository>` then `codex plugin add factorio-modding@factorio-modding-skills`.
   Install `manifest-dev` first (see the README section "Codex setup"). Point `CODEX_HOME` at an empty folder for a clean install.
 - The scripts run on their own: `uv run --script plugins/factorio-modding/skills/factorio-toolkit/scripts/preflight.py`.
   Set `FACTORIO_PATH` to your Factorio folder for anything that starts the game.

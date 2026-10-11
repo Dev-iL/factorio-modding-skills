@@ -1,6 +1,6 @@
 # Graveyard: approaches that fail
 
-Things an agent tends to try and that do not work. Each entry says what fails, the evidence (checked in this project on
+Things an agent tends to try and that do not work. Each entry says what fails, the evidence (checked in this repository on
 2026-10-10 against Factorio 2.1.21 and the live services unless another source is named), and what to do instead.
 
 ## Alphabetical parameter order in the API JSON

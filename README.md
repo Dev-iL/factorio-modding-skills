@@ -75,9 +75,8 @@ codex plugin add factorio-modding@factorio-modding-skills
 `codex plugin list` shows both as "installed, enabled". In a Codex session, ask for a skill by name, for example "use the
 design-mod skill to plan a mod that adds a new fluid".
 
-Codex runs commands in a sandbox that can block uv from writing its cache; this happened in this project's own test run. If `uv run` fails with "Access is denied", allow the
-sandbox to write the uv cache folder and to reach the network. The sites to allow are lua-api.factorio.com and the mod portal. Alternatively, point
-`UV_CACHE_DIR` and `FM_CACHE_DIR` (the toolkit's API cache) at a folder the sandbox may write.
+Codex limits what its commands may write and reach, which can block uv from writing its cache; this happened in this repository's own test run. If `uv run` fails with "Access is denied", allow Codex to write the uv cache folder and to reach the network. The sites to allow are lua-api.factorio.com and the mod portal. Alternatively, point
+`UV_CACHE_DIR` and `FM_CACHE_DIR` (the toolkit's API cache) at a folder that Codex may write.
 
 ## Point the plugin at your game
 
@@ -101,7 +100,7 @@ The scripts look for Factorio in `FACTORIO_PATH`, then in common standalone loca
 Searching and downloading from the mod portal needs your Factorio username and API token; listing and viewing mods does not.
 The token is stored in the `player-data.json` file in your Factorio user data folder
 ([Mod portal API](https://wiki.factorio.com/Mod_portal_API)). That page does not name the fields. The toolkit reads
-`service-username` and `service-token`, the field names this project observed in a Factorio 2.1.21 install. Copy the two values
+`service-username` and `service-token`, the field names this repository observed in a Factorio 2.1.21 install. Copy the two values
 yourself into the same files as `FACTORIO_PATH`, under the names `FACTORIO_USERNAME` and `FACTORIO_TOKEN`:
 
 - Claude Code: `"env": { "FACTORIO_USERNAME": "...", "FACTORIO_TOKEN": "..." }` in `~/.claude/settings.json`.

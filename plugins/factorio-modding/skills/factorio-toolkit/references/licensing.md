@@ -1,7 +1,7 @@
 # Licensing: building on another author's mod
 
 Rules for any plan that starts from a mod somebody else wrote: porting it to a new game version, extending it, or
-borrowing an idea. They are the project owner's rulings. This page is not legal advice; when a licence is unclear,
+borrowing an idea. They are the repository owner's rulings. This page is not legal advice; when a licence is unclear,
 choose the more restrictive reading and tell the user.
 
 ## The rules
