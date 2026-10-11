@@ -39,8 +39,8 @@ Everything else mocks the network. Deselect a group with `-m "not game"`.
 
 - Scripts are single-file `uv run --script` programs with a PEP 723 header and `requires-python = ">=3.15"`.
   Shared code lives in `scripts/_lib/` and is imported as `_lib` (uv puts the script's directory on `sys.path`).
-  The one exception is a script that runs inside Blender's bundled Python (`blender -b --python`); it imports
-  `bpy` and has no uv header.
+  The exception is the scripts in `scripts/blender/`, which run inside Blender's bundled Python (`blender -b --python`);
+  they import `bpy` and have no uv header.
 - HTTP goes through `httpx2` only: no `requests`, `urllib.request`, `urllib3`, `aiohttp` or plain `httpx`.
 - Script names use underscores so tests can import them. Every script module has a test.
 - Every failure a user can hit raises `ToolkitError` (cause plus next step); scripts never show a raw traceback.

@@ -53,7 +53,6 @@ def _candidate_roots(env: Mapping[str, str]) -> list[Path]:
     home = Path(env.get("USERPROFILE") or Path.home())
     program_files = [env.get(k) for k in ("ProgramFiles", "ProgramFiles(x86)")]
     roots = [Path(pf) / "Factorio" for pf in program_files if pf]
-    roots += [Path(pf) / "Steam" / "steamapps" / "common" / "Factorio" for pf in program_files if pf]
     roots += [home / "Factorio", home / "Downloads" / "Factorio", Path("C:/Factorio")]
     return roots
 

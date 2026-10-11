@@ -15,8 +15,8 @@ that cannot become a consistent multi-direction sheet.
 
 The scripts are in `scripts/` next to this file. Run each as `uv run --script ${CLAUDE_SKILL_DIR}/scripts/<name>.py ...`
 (Claude Code fills in `${CLAUDE_SKILL_DIR}`; in Codex use the folder of the SKILL.md you loaded). They need `uv` 0.13 or newer;
-uv fetches Python 3.15 and the dependencies by itself. Every script has `--help`. Each prints one `PASS`/`FAIL` line or a plain
-error with the next step; none prints a traceback.
+uv fetches Python 3.15 and the dependencies by itself. Every script has `--help`. The checks (`preflight.py`, `check_data.py`, `run_tests.py`, `scan_log.py`) end with a `PASS` or `FAIL` line;
+a failure of any script is a plain error with the next step, never a traceback.
 
 If `uv run` itself fails before any output (uv missing, uv older than 0.13, no Python 3.15), the toolkit cannot report it:
 tell the user to install uv from https://docs.astral.sh/uv/ or run `uv self update`, then `uv python install 3.15`.

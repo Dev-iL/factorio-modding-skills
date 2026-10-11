@@ -21,7 +21,7 @@ version too. This page keeps only what those commands cannot explain: names that
 These do not fail on load or on a name lookup; they run and do something else. Search for them by hand.
 
 - `LuaEntity.remove_fluid`: the 2.0 method took a table `{name, amount, ...}` and returned the amount removed. In 2.1 the
-  same name takes `(index, amount)` and returns a `Fluid`. The old behaviour is `extract_fluid`. `set_fluid` now requires its second
+  same name takes `(index, amount)` and returns a `Fluid?` (nil when nothing was removed). The old behaviour is `extract_fluid`. `set_fluid` now requires its second
   argument and returns a `FluidAmount` instead of a `Fluid`.
 - Science packs are plain items, and `TechnologyPrototype` and `LabPrototype` accept any item as a research ingredient. Code that
   tests `type == "tool"` to find science packs misses them (2.1.7 changelog).

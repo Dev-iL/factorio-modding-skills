@@ -29,7 +29,7 @@ check the **control stage**, the runtime scripts, by creating a map and running 
 
 Supported:
 
-- Factorio **standalone Windows installs**: the zip package (portable) and the standalone installer. Steam installs are untested.
+- Factorio **standalone Windows installs**: the zip package (portable) and the standalone installer. Steam, Linux, and macOS layouts are not supported.
 - Experimental 2.1 (developed against 2.1.21) and stable 2.0.
 - `update-mod` ports mods built for Factorio 2.0.77 or later (`factorio_version` 2.0 or newer).
 
