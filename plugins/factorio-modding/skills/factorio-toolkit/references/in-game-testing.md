@@ -1,13 +1,13 @@
 # Test a mod against the real game
 
 Two scripts launch the game headless in a sandbox (see [install-paths-and-logs.md](install-paths-and-logs.md)); neither
-opens a window or touches the user's mods and saves. The following table lists them with `scan_log.py`, which reads a finished run:
+opens a window (apart from `check_data.py --graphics`, described under Data-stage details) or touches the user's mods and saves. The following table lists them with `scan_log.py`, which reads a finished run:
 
 | Script | What it proves | Typical time |
 |---|---|---|
 | `check_data.py --mod DIR` | The data stage loads: the game exits 0 on `--dump-data`, the log has no errors, and `data-raw-dump.json` parses. | 4-22 s |
 | `run_tests.py --mod DIR` | The control stage runs and the mod's own assertions pass: the script creates a map with the mod, then benchmarks it for a few ticks. | 5-25 s |
-| `scan_log.py --log FILE` | Reads a log once and lists errors with stage, file and log excerpt. | instant |
+| `scan_log.py --log FILE` | Reads a log once and lists errors with stage, file, and log excerpt. | instant |
 
 All three exit 0 on success, 1 when the mod fails, and 2 when the environment needs fixing (missing game, bad path).
 A failure names the stage (`data` or `control`), the file and line or the prototype, and a log excerpt.
@@ -25,7 +25,7 @@ A failure names the stage (`data` or `control`), the file and line or the protot
 
 ## Write control-stage tests
 
-`run_tests.py` reads results from the log. A test reports by calling `log()` with one of these forms. The `[FMS-TEST]` tag is this plugin's own marker, not a
+`run_tests.py` reads results from the log. A test reports by calling `log()` with one of these forms. The `[FMS-TEST]` tag (FMS stands for factorio-modding-skills) is this plugin's own marker, not a
 Factorio feature:
 
 ```lua

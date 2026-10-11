@@ -15,7 +15,7 @@ The plugin provides four skills:
 
 | Skill | Use it to |
 |---|---|
-| `design-mod` | Turn an idea, or an existing mod, into a scored design and a manifest. It searches the mod portal for similar mods, interviews you, scores feasibility, fun and effort from 1 to 5 with evidence, and writes a manifest whose checks run the real game. |
+| `design-mod` | Turn an idea, or an existing mod, into a scored design and a manifest. It searches the mod portal for similar mods, interviews you, scores feasibility, fun, and effort from 1 to 5 with evidence, and writes a manifest whose checks run the real game. |
 | `develop-mod` | Build the mod a manifest describes and verify it loads and passes its tests in Factorio. |
 | `update-mod` | Port a 2.0 mod to 2.1: compare the two API versions and changelogs, list what breaks with file and line, and propose optional gameplay changes the new version allows. |
 | `factorio-toolkit` | Shared by the other three, not run by you: API lookup, version diff, mod portal client, game launcher, log scanner, and sprite tools. |
@@ -31,7 +31,7 @@ Supported:
 
 - Factorio **standalone Windows installs**: the zip package (portable) and the standalone installer. Steam, Linux, and macOS layouts are not supported.
 - Experimental 2.1 (developed against 2.1.21) and stable 2.0.
-- `update-mod` ports mods built for Factorio 2.0.77 or later (`factorio_version` 2.0 or newer).
+- `update-mod` ports mods built for Factorio 2.0.77 or later (`factorio_version` 2.0 or later).
 
 Not supported:
 
@@ -44,7 +44,7 @@ Not supported:
 
 - Windows with Factorio installed as described in Supported and not supported.
 - Claude Code, tested with 2.1.296, or Codex, tested with 0.159.3 and 0.162.1.
-- [uv](https://docs.astral.sh/uv/) 0.13 or newer, the first release that ships Python 3.15. The scripts are single-file Python
+- [uv](https://docs.astral.sh/uv/) 0.13 or later, the first release whose default Python is 3.15 ([uv 0.13.0 release notes](https://github.com/astral-sh/uv/releases/tag/0.13.0)). The scripts are single-file Python
   programs run with `uv run --script`; uv downloads Python 3.15 and their dependencies on first use.
 - [Blender](https://www.blender.org/) 5.x, only for rendered sprites (`sprites.py render`).
 - Mod portal credentials, only for portal search and download (see Mod portal credentials).
@@ -88,11 +88,13 @@ The scripts look for Factorio in `FACTORIO_PATH`, then in common standalone loca
   ```json
   { "env": { "FACTORIO_PATH": "C:\\Games\\Factorio" } }
   ```
-- Codex: add it to `~/.codex/config.toml` (in TOML, write each Windows backslash twice, or use forward slashes):
+- Codex: add it to `~/.codex/config.toml`:
   ```toml
   [shell_environment_policy]
   set = { FACTORIO_PATH = "C:\\Games\\Factorio" }
   ```
+
+  In TOML, write each Windows backslash twice, or use forward slashes.
 
 ## Mod portal credentials
 

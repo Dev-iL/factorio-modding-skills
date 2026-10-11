@@ -14,7 +14,7 @@ that cannot become a consistent multi-direction sheet.
 ## How to run the scripts
 
 The scripts are in `scripts/` next to this file. Run each as `uv run --script ${CLAUDE_SKILL_DIR}/scripts/<name>.py ...`
-(Claude Code fills in `${CLAUDE_SKILL_DIR}`; in Codex use the folder of the SKILL.md you loaded). They need `uv` 0.13 or newer;
+(Claude Code fills in `${CLAUDE_SKILL_DIR}`; in Codex use the folder of the SKILL.md you loaded). They need `uv` 0.13 or later;
 uv fetches Python 3.15 and the dependencies by itself. Every script has `--help`. The checks (`preflight.py`, `check_data.py`, `run_tests.py`, `scan_log.py`) end with a `PASS` or `FAIL` line;
 a failure of any script is a plain error with the next step, never a traceback.
 

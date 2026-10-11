@@ -4,7 +4,7 @@ Give each asset the lowest rung that looks right, and name the rung in the manif
 loads like any other sprite; none involves an AI image model. Another mod's graphics are never a source (see
 [licensing.md](licensing.md)).
 
-The graphics sources, from the lowest rung to the highest:
+The following table lists the graphics sources from the lowest rung to the highest:
 
 | Rung | Use it when | How |
 |---|---|---|
@@ -83,7 +83,7 @@ Facts the emitted Lua relies on, all from the 2.1.21 prototype docs ([Sprite](ht
 - `shift` is in tiles. The tool aims the camera at half the model's height, so the point under the entity's centre is
   `center_z * cos(elevation)` below the frame centre. It writes that value as the `shift` on both layers.
 - `draw_as_shadow` marks a layer as a shadow. The base game draws its shadow as a separate layer; here the shadow shares the main
-  layer's frame, `shift` and `scale` because both are rendered from the same camera.
+  layer's frame, `shift`, and `scale` because both are rendered from the same camera.
 - `animation_speed` of 1 is one frame per tick; the tool writes `--animation-speed` (default 0.5).
 
 The camera elevation (60 degrees) and the shadow direction are the tool's own choices, not Factorio's; tune `--elevation`,

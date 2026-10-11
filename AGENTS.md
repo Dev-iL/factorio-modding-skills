@@ -26,7 +26,7 @@ Everything else mocks the network. Deselect a group with `-m "not game"`.
 
 ## Try the plugin locally
 
-- Claude Code, one session, no install: `claude --plugin-dir plugins/factorio-modding` (needs `manifest-dev` installed too).
+- Claude Code, one session, no install: `claude --plugin-dir plugins/factorio-modding`. This needs `manifest-dev` installed too.
   To run a skill non-interactively, use `claude -p "/factorio-modding:design-mod <idea> --autonomous" --plugin-dir plugins/factorio-modding`.
 - Claude Code, installed: `claude plugin marketplace add <path to this repo>` then
   `claude plugin install factorio-modding@factorio-modding-skills`. Point `CLAUDE_CONFIG_DIR` at an empty folder to keep your own setup out of it.
@@ -41,7 +41,7 @@ Everything else mocks the network. Deselect a group with `-m "not game"`.
   Shared code lives in `scripts/_lib/` and is imported as `_lib` (uv puts the script's directory on `sys.path`).
   The exception is the scripts in `scripts/blender/`, which run inside Blender's bundled Python (`blender -b --python`);
   they import `bpy` and have no uv header.
-- HTTP goes through `httpx2` only: no `requests`, `urllib.request`, `urllib3`, `aiohttp` or plain `httpx`.
+- HTTP goes through `httpx2` only: no `requests`, `urllib.request`, `urllib3`, `aiohttp`, or plain `httpx`.
 - Script names use underscores so tests can import them. Every script module has a test.
 - Every failure a user can hit raises `ToolkitError` (cause plus next step); scripts never show a raw traceback.
   The exception is `plugins/factorio-modding/skills/update-mod/scripts/version_gate.py`: it is stdlib-only so that it runs
@@ -49,6 +49,6 @@ Everything else mocks the network. Deselect a group with `-m "not game"`.
 - Credentials come from `FACTORIO_USERNAME` and `FACTORIO_TOKEN`. Nothing reads `player-data.json` unless the
   user approved it in the current conversation and the script was given the explicit flag. Nothing prints a
   credential; run any text that might carry one through `_lib.redact.redact`.
-- The plugin never uploads, publishes or edits anything on the mod portal.
+- The plugin never uploads, publishes, or edits anything on the mod portal.
 - No AI image generation anywhere in a graphics path.
 - Do not add a `CLAUDE.md`; this file is the single instruction file for both hosts.
