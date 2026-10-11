@@ -1,19 +1,10 @@
 # Data stage and control stage
 
-Where logic belongs, and the stage rules that cost agents runs. The stage order, the three files per stage, load order, and the
-`storage` table are explained on the official 2.1.21 pages: [Data lifecycle](https://lua-api.factorio.com/2.1.21/auxiliary/data-lifecycle.html),
+Where logic belongs. The stage order, the three files per stage, load order, and the `storage` table are explained on the official
+2.1.21 pages: [Data lifecycle](https://lua-api.factorio.com/2.1.21/auxiliary/data-lifecycle.html),
 [Storage](https://lua-api.factorio.com/2.1.21/auxiliary/storage.html), and [Mod structure](https://lua-api.factorio.com/2.1.21/auxiliary/mod-structure.html).
-Read them for those facts. This page keeps only what they leave an agent to trip over.
-
-## Stage gotchas
-
-- Define your own prototypes in `data.lua`, edit another mod's prototypes in `data-updates.lua`, and put corrections that must win
-  over every other mod in `data-final-fixes.lua`.
-- Writing to `storage` inside `on_load` is an error.
-- A client joining a multiplayer game runs only `control.lua` and `on_load`, so `on_load` must rebuild exactly the state the other
-  players have.
-- State that must survive a save goes into `storage`; functions in it are an error. An ordinary variable is lost on load and
-  differs between a joining client and the host.
+Read them for those facts. One consequence they leave an agent to trip over: an ordinary Lua variable in `control.lua` is lost on
+load and differs between a joining client and the host, so anything that must survive a save or agree across players goes into `storage`.
 
 ## When to prefer the data stage
 
