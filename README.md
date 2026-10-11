@@ -81,7 +81,7 @@ The scripts look for Factorio in `FACTORIO_PATH`, then in common standalone loca
   ```json
   { "env": { "FACTORIO_PATH": "C:\\Games\\Factorio" } }
   ```
-- Codex: add it to `~/.codex/config.toml`:
+- Codex: add it to `~/.codex/config.toml` (in TOML, write each Windows backslash twice, or use forward slashes):
   ```toml
   [shell_environment_policy]
   set = { FACTORIO_PATH = "C:\\Games\\Factorio" }
@@ -103,7 +103,8 @@ the variables are missing, the agent may ask whether to read the file once, and 
 
 ## First run: preflight
 
-Ask the agent to run the toolkit's preflight, or run it yourself from the installed plugin's `skills/factorio-toolkit/scripts` folder:
+Ask the agent to run the toolkit's preflight, or run it yourself from the installed plugin's `skills/factorio-toolkit/scripts` folder. Claude Code shows the plugin's folder as `installPath` in
+`claude plugin list --json`; Codex prints it as "Installed plugin root" when you run `codex plugin add`. Make sure `FACTORIO_PATH` is set in that shell, then:
 
 ```
 uv run --script preflight.py
