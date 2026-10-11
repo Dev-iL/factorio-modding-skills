@@ -42,6 +42,8 @@ tell the user to install uv from https://docs.astral.sh/uv/ or run `uv self upda
 
 ## Scripts
 
+Each script and what it is for:
+
 | Script | Use it to |
 |---|---|
 | `preflight.py` | Check the environment and name what is missing. |

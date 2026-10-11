@@ -4,6 +4,8 @@ Give each asset the lowest rung that looks right, and name the rung in the manif
 loads like any other sprite; none involves an AI image model. Another mod's graphics are never a source (see
 [licensing.md](licensing.md)).
 
+The graphics sources, from the lowest rung to the highest:
+
 | Rung | Use it when | How |
 |---|---|---|
 | 1. Reuse, tint, compose | A base-game sprite looks close enough. **The default.** | Reference the base-game file with a `tint`; `sprites.py tint`, `sprites.py icon` |
@@ -14,7 +16,8 @@ loads like any other sprite; none involves an AI image model. Another mod's grap
 ## Rung 1: reuse, tint, compose
 
 For an entity, keep the base-game file and set `tint` on the layer that should change. Leave the shadow layer alone.
-Copying the whole prototype with `table.deepcopy` keeps the sprite rectangles correct (see [graveyard.md](graveyard.md), item 5):
+Copying the whole prototype with `table.deepcopy` keeps the sprite rectangles correct (see "Hard-coded pixel rectangles for
+base-game sprites" in [graveyard.md](graveyard.md)):
 
 ```lua
 local chest = table.deepcopy(data.raw["container"]["wooden-chest"])
@@ -23,21 +26,22 @@ chest.minable.result = "my-chest"
 chest.picture.layers[1].tint = { r = 0.4, g = 0.7, b = 1.0 }   -- layers[2] is the shadow
 ```
 
-`sprites.py tint in.png out.png --color "#66b3ff"` writes a recoloured PNG instead, for when a new file is wanted; it multiplies the
-colour channels and keeps alpha. Compare it with the in-game `tint` before relying on the two matching.
+`sprites.py tint in.png out.png --color "#66b3ff"` writes a recoloured PNG instead, for when a new file is wanted. It multiplies
+the colour channels and keeps alpha. Compare it with the in-game `tint` before relying on the two matching.
 
-`sprites.py icon base.png badge.png out.png --mod-name <mod>` composites a 64 px icon: the base icon with the badge in a corner,
-and prints the `icon`/`icon_size` lines for the prototype. Base-game icon files are strips of mipmap levels
-(`iron-plate.png` is 120x64: 64, 32, 16 and 8 px side by side), so the tool takes the first level of each input. The prototype can also
-layer icons itself with `icons = {{icon = ..., icon_size = 64}, {icon = ..., icon_size = 64, scale = 0.5, shift = {8, 8}}}`
+`sprites.py icon base.png badge.png out.png --mod-name <mod>` composites a 64 px icon, the base icon with the badge in a corner,
+and prints the `icon` and `icon_size` lines for the prototype. Base-game icon files are strips of mipmap levels
+(`iron-plate.png` is 120x64: 64, 32, 16, and 8 px side by side), so the tool takes the first level of each input. The prototype can
+also layer icons itself with `icons = {{icon = ..., icon_size = 64}, {icon = ..., icon_size = 64, scale = 0.5, shift = {8, 8}}}`
 ([IconData](https://lua-api.factorio.com/2.1.21/types/IconData.html)); use that when no new file is needed.
 
-Icon mipmaps in 2.x: there is no `icon_mipmaps` field (removed in 2.0.7: "Mipmap count will be inferred from icon_size and actual
-dimensions of the source image", `data/changelog.txt`; absent from the 2.1.21 `prototype-api.json`). The file declares its own
-levels: each is half the previous, laid left to right from the top-left corner with no padding, so a file with N levels is
-`sum(icon_size >> i)` wide and `icon_size` high ([IconData](https://lua-api.factorio.com/2.1.21/types/IconData.html), "icon mipmaps").
-The game generates mipmaps itself for a plain 64x64 file, which is what `icon` writes by default. `--mipmaps 4` writes a 120x64 strip
-like the base game's; the tool resamples the levels from the composite, so it adds nothing over the generated ones.
+Icon mipmaps in 2.x: there is no `icon_mipmaps` field. It was removed in 2.0.7 ("Mipmap count will be inferred from icon_size
+and actual dimensions of the source image", `data/changelog.txt`) and is absent from the 2.1.21 `prototype-api.json`. The file
+declares its own levels: each is half the previous, laid left to right from the top-left corner with no padding. A file with N
+levels is therefore `sum(icon_size >> i)` wide and `icon_size` high ([IconData](https://lua-api.factorio.com/2.1.21/types/IconData.html),
+"icon mipmaps"). The game generates mipmaps itself for a plain 64x64 file, which is what `icon` writes by default. `--mipmaps 4`
+writes a 120x64 strip like the base game's, but the tool resamples the levels from the composite, so it adds nothing over the
+generated ones.
 
 ## Rung 2: an agent-modelled Blender render
 
@@ -48,29 +52,36 @@ sprites.py render --model model.py --name rotor --mod-name my-mod --out <mod>/gr
     --directions 4 --frames 2 --frame-size 320 --save-blend model.blend
 ```
 
-The model script runs inside Blender with `bpy` and defines `build()` and optionally `animate(t)`: geometry on the z=0 ground
-plane, centred on the origin, front facing +Y (north); `t` in [0, 1) is the loop position of each frame. Give materials a
-`diffuse_color`; the fast Workbench renderer uses it as the base colour and shades it with fixed studio lighting, so it renders darker than the swatch. The tool renders every direction by turning the model, keeping
-the orthographic camera and the lighting fixed, so all directions are shaded consistently. A second pass flattens the model onto
-the ground along a fixed light direction (`--shadow-x`, `--shadow-y`; right and down on screen) into solid black.
+The model script runs inside Blender with `bpy` and defines `build()` and optionally `animate(t)`. The geometry sits on the z=0
+ground plane, centred on the origin, with its front facing +Y (north); `t` in [0, 1) is the loop position of each frame. Give
+materials a `diffuse_color`. The fast Workbench renderer uses it as the base colour and shades it with fixed studio lighting, so
+the render is darker than the swatch. The tool renders every direction by turning the model, with the orthographic camera and the
+lighting fixed, so all directions are shaded consistently. A second pass flattens the model onto the ground along a fixed light
+direction (`--shadow-x`, `--shadow-y`; right and down on screen) into solid black.
 
-The output is `<name>.png` (frames across, directions down, in Factorio's order north, east, south, west; 8 directions use
-north, north_east, east, ...), `<name>-shadow.png` with the same layout, and `<name>.lua`: an `Animation4Way`-shaped table whose
-two layers use `x`/`y` to select each direction's block, with `draw_as_shadow = true` on the shadow layer. The same table with
-`north` ... `west` keys fits any `Animation4Way` or (single frame) `Sprite4Way` property, for example an assembling machine's
-`graphics_set.animation` (`WorkingVisualisations::animation` is an `Animation4Way`). The tool also prints the layout (frame size, columns, rows, sheet size), a warning if the model
-or shadow touches the frame edge (raise `--frame-size`), and the shadow's centroid relative to the model.
+The tool writes three files:
+
+- `<name>.png`: frames across and directions down, in Factorio's order north, east, south, west. Eight directions use north,
+  north_east, east, and so on.
+- `<name>-shadow.png`, with the same layout.
+- `<name>.lua`: an `Animation4Way`-shaped table whose two layers use `x` and `y` to select each direction's block, with
+  `draw_as_shadow = true` on the shadow layer.
+
+The same table with `north` to `west` keys fits any `Animation4Way` property, or a single-frame `Sprite4Way` property. An example is
+an assembling machine's `graphics_set.animation` (`WorkingVisualisations::animation` is an `Animation4Way`). The tool also prints
+the layout (frame size, columns, rows, sheet size), a warning if the model or shadow touches the frame edge (raise `--frame-size`),
+and the shadow's centroid relative to the model.
 
 Facts the emitted Lua relies on, all from the 2.1.21 prototype docs ([Sprite](https://lua-api.factorio.com/2.1.21/types/SpriteParameters.html),
 [Animation](https://lua-api.factorio.com/2.1.21/types/AnimationParameters.html)) unless noted:
 
 - `hr_version` is gone; graphics are always high definition (2.0.7 changelog). The base game draws 64 px per tile at `scale = 0.5`
-  (`wooden-chest.png` is 62x72 px at `scale = 0.5` in `data/base/prototypes/entity/entities.lua`), so the tool renders 64 px per tile
-  and writes `scale = 0.5`.
+  (`wooden-chest.png` is 62x72 px at `scale = 0.5` in `data/base/prototypes/entity/entities.lua`). The tool therefore renders 64 px
+  per tile and writes `scale = 0.5`.
 - `width`/`height` are one frame; `x`/`y` locate the first frame in the file; `frame_count` frames run left to right and wrap after
   `line_length` per row.
 - `shift` is in tiles. The tool aims the camera at half the model's height, so the point under the entity's centre is
-  `center_z * cos(elevation)` below the frame centre; it writes that as the `shift` on both layers.
+  `center_z * cos(elevation)` below the frame centre. It writes that value as the `shift` on both layers.
 - `draw_as_shadow` marks a layer as a shadow. The base game draws its shadow as a separate layer; here the shadow shares the main
   layer's frame, `shift` and `scale` because both are rendered from the same camera.
 - `animation_speed` of 1 is one frame per tick; the tool writes `--animation-speed` (default 0.5).
@@ -78,13 +89,15 @@ Facts the emitted Lua relies on, all from the 2.1.21 prototype docs ([Sprite](ht
 The camera elevation (60 degrees) and the shadow direction are the tool's own choices, not Factorio's; tune `--elevation`,
 `--shadow-x` and `--shadow-y` against a neighbouring base-game entity.
 
-## Rung 3: a user-supplied `.blend`
+## Rung 3: a user-supplied Blender file
 
-`sprites.py render --blend model.blend ...` takes the same options. The tool deletes the file's cameras and lights, uses its own
-(so the look matches rung 2), and samples `--frames` frames evenly from the file's frame range. Orient the model as in rung 2.
-`--save-blend` on a rung 2 run keeps the model, animation baked into keyframes, for a later `--blend` run.
+`sprites.py render --blend model.blend ...` takes the same options. The tool deletes the file's cameras and lights and uses its own,
+so the look matches rung 2. It samples `--frames` frames evenly from the file's frame range. Orient the model as in rung 2.
+`--save-blend` on a rung 2 run keeps the model, with the animation baked into keyframes, for a later `--blend` run.
 
 ## Limits
+
+The following limits apply to sprite sheets, with the source of each:
 
 | Limit | Value | Source |
 |---|---|---|

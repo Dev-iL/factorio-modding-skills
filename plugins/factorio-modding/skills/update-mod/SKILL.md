@@ -9,7 +9,7 @@ argument-hint: '<portal mod name | path to a mod folder> [--from <series>] [--ta
 Planning and execution are done by `manifest-dev`; this skill adds the version arithmetic, the API and changelog diff, and the
 gameplay proposals. Load the `factorio-toolkit` skill first and run its `preflight.py`; stop on any failure.
 
-Supported today: a mod declaring `factorio_version` 2.0 or newer, ported to the same or a newer game version. Downgrades and
+Supported: a mod declaring `factorio_version` 2.0 or newer, ported to the same or a newer game version. Downgrades and
 sources older than 2.0.77 are refused. `--autonomous` is passed through to `define` and also means no user will pick proposals:
 adopt none. `--plan-only` stops after the manifest is written.
 

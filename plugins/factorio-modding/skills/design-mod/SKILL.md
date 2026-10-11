@@ -15,7 +15,7 @@ and stop on any failure (it names the fix). The mod gets built later by `develop
 - **Existing mod**: the argument is a folder containing `info.json`, or a name `portal.py info` finds on the portal.
 - **New idea**: anything else.
 
-`--design-doc` writes a design document (below). `--autonomous` is passed through to `figure-out` and `define`.
+`--design-doc` writes a design document (see Design document). `--autonomous` is passed through to `figure-out` and `define`.
 
 ## New idea
 
@@ -34,7 +34,7 @@ and stop on any failure (it names the fix). The mod gets built later by `develop
    Plan a fork or republish only under a permissive licence or when the user says they have permission.
 3. **Map the mod**: list its prototypes (type and name from its `data*.lua`), its control scripts and the events they handle,
    its graphics files, its locale and its settings. Record the map in the design notes; it is what the plan is built against.
-4. Search the portal for similar mods as above, then continue at **Grill**.
+4. Search the portal for similar mods as in New idea step 1, then continue at **Grill**.
 
 ## Grill
 
