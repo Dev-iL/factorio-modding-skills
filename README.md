@@ -63,7 +63,7 @@ skills with `/factorio-modding:design-mod`, `/factorio-modding:develop-mod`, or 
 
 ## Codex setup
 
-Codex has no dependency mechanism between plugins, so install manifest-dev yourself first:
+The Codex [plugin build guide](https://developers.openai.com/codex/plugins/build) documents no way to declare a dependency on another plugin, so install manifest-dev yourself first:
 
 ```
 codex plugin marketplace add doodledood/manifest-dev
@@ -75,8 +75,8 @@ codex plugin add factorio-modding@factorio-modding-skills
 `codex plugin list` shows both as "installed, enabled". In a Codex session, ask for a skill by name, for example "use the
 design-mod skill to plan a mod that adds a new fluid".
 
-Codex runs commands in a sandbox that can block uv from writing its cache. If `uv run` fails with "Access is denied", allow the
-sandbox to write the uv cache folder and to reach the network (lua-api.factorio.com and the mod portal). Alternatively, point
+Codex runs commands in a sandbox that can block uv from writing its cache; this happened in this project's own test run. If `uv run` fails with "Access is denied", allow the
+sandbox to write the uv cache folder and to reach the network. The hosts are lua-api.factorio.com and the mod portal. Alternatively, point
 `UV_CACHE_DIR` and `FM_CACHE_DIR` (the toolkit's API cache) at a folder the sandbox may write.
 
 ## Point the plugin at your game

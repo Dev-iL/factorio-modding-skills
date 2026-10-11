@@ -83,9 +83,13 @@ THE DOCUMENTATION IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 
 ## TalShar783/Factorio-Modding-Skill
 
-Source: [TalShar783/Factorio-Modding-Skill](https://github.com/TalShar783/Factorio-Modding-Skill). Credited as inspiration for
-several ideas. They are preferring generated API stubs for lookups and the caveat that parameter `order` matters. They also
-include reading the log once instead of tailing it, putting data stage logic before control stage logic, and keeping a list
-of approaches known to fail.
+Source: [TalShar783/Factorio-Modding-Skill](https://github.com/TalShar783/Factorio-Modding-Skill). Credited as inspiration. This project borrows five ideas from it:
+
+- preferring generated API stubs for lookups;
+- the caveat that parameter `order` matters;
+- reading the log once instead of tailing it;
+- putting data-stage logic before control-stage logic;
+- keeping a list of approaches known to fail.
+
 That repository carries no licence, so no text or code was copied from it. Every passage in this repository is written
 independently.

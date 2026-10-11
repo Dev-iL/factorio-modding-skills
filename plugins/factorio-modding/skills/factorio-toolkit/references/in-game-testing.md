@@ -1,7 +1,8 @@
 # Test a mod against the real game
 
-Two scripts launch the game headless in a sandbox (see [install-paths-and-logs.md](install-paths-and-logs.md)); neither
-opens a window (apart from `check_data.py --graphics`, described under Data-stage details) or touches the user's mods and saves. The following table lists them with `scan_log.py`, which reads a finished run:
+Two scripts launch the game in a sandbox (see [install-paths-and-logs.md](install-paths-and-logs.md)). Neither touches the user's
+mods and saves, and neither opens a window, except `check_data.py --graphics`, which shows a small window (see Data-stage details).
+The following table lists them with `scan_log.py`, which reads a finished run:
 
 | Script | What it proves | Typical time |
 |---|---|---|

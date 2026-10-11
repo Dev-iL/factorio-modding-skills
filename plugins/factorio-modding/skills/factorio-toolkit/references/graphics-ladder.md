@@ -87,7 +87,7 @@ Facts the emitted Lua relies on, all from the 2.1.21 prototype docs ([Sprite](ht
 - `animation_speed` of 1 is one frame per tick; the tool writes `--animation-speed` (default 0.5).
 
 The camera elevation (60 degrees) and the shadow direction are the tool's own choices, not Factorio's; tune `--elevation`,
-`--shadow-x` and `--shadow-y` against a neighbouring base-game entity.
+`--shadow-x`, and `--shadow-y` against a neighbouring base-game entity.
 
 ## Rung 3: a user-supplied Blender file
 

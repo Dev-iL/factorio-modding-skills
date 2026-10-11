@@ -16,7 +16,7 @@ The two layouts differ in where the game writes its data:
 | Config file | `<install>\config\config.ini` | `%APPDATA%\Factorio\config\config.ini` |
 
 `config-path.cfg` sits in the install root. Its `config-path=__PATH__executable__/../../config` line says where
-`config.ini` is, and the `[path]` section of that file (`read-data`, `write-data`) is what the game actually uses. Once
+`config.ini` is, and the `[path]` section of that file (`read-data`, `write-data`) is what the game actually uses. After
 `config.ini` exists, the `use-system-...` setting no longer changes anything, so read `config.ini` first.
 `locate_game.py` does this and prints the resolved paths; do not guess them.
 

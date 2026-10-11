@@ -6,7 +6,7 @@ that installs into both Claude Code and Codex.
 ## Layout
 
 - `.claude-plugin/marketplace.json` lists the plugin for Claude Code. `.agents/plugins/marketplace.json` lists it for Codex.
-- `plugins/factorio-modding/` is the single plugin. It has `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`
+- `plugins/factorio-modding/` is the single plugin. It has `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`,
   and exactly one `skills/` tree that both hosts read. Do not add symlinks (Windows checks them out as text files)
   and do not copy a skill file into a second place.
 - `plugins/factorio-modding/skills/factorio-toolkit/` is the shared layer: `scripts/` (the Python tools) and `references/`
@@ -20,8 +20,8 @@ that installs into both Claude Code and Codex.
 uv run --python 3.15 pytest
 ```
 
-Tests marked `game` need the local Factorio install (`FACTORIO_PATH` or a standard location). Tests marked `blender`
-need Blender (`BLENDER_PATH` or a standard location). Tests marked `network` hit the live portal or lua-api.factorio.com.
+Tests marked `game` need the local Factorio install. Set `FACTORIO_PATH`, or keep it in a standard location. Tests marked `blender`
+need Blender. Set `BLENDER_PATH`, or keep it in a standard location. Tests marked `network` hit the live portal or lua-api.factorio.com.
 Everything else mocks the network. Deselect a group with `-m "not game"`.
 
 ## Try the plugin locally

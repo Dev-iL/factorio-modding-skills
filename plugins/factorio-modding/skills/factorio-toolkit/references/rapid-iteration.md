@@ -1,6 +1,6 @@
 # Rapid iteration without restarting the game
 
-Restarting Factorio takes 20 to 60 seconds with Space Age on the machine this plugin was built on (measured with `--dump-data`, which loads the same data stage). These techniques shorten the loop for some changes. Each is marked
+A `--dump-data` run, which loads the same data stage, takes about 22 seconds with Space Age on the machine this plugin was built on. A full restart also loads graphics and takes longer; that time was not measured. These techniques shorten the loop for some changes. Each is marked
 with how well it is established:
 
 - "Confirmed by the user" means the repository owner reported it working.
