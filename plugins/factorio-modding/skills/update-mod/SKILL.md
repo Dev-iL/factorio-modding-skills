@@ -1,7 +1,7 @@
 ---
 name: update-mod
 description: Port a Factorio 2.0 mod to a newer game version (2.1) and propose gameplay changes that the new version makes possible. Use it when the user wants a mod brought up to date, wants to know what the new Factorio version breaks in a mod, or wants ideas for using new game features in an existing mod. Works from a portal mod name or a local mod folder.
-argument-hint: '<portal mod name | path to a mod folder> [--target <version>] [--plan-only] [--autonomous]'
+argument-hint: '<portal mod name | path to a mod folder> [--from <series>] [--target <version>] [--plan-only] [--autonomous]'
 ---
 
 # Update a Factorio mod
@@ -15,7 +15,7 @@ adopt none. `--plan-only` stops after the manifest is written.
 
 ## Steps
 
-1. **Get the mod**: `portal.py download <name> --dest <work folder>` (needs credentials) or use the local folder. Read its `info.json`.
+1. **Get the mod**: `portal.py download <name> --dest <work folder>` (needs credentials), adding `--factorio-version <series>` when `--from` names the series to port from (for example `--from 2.0` when the newest release already targets 2.1), or use the local folder. Read its `info.json`.
 2. **Resolve the target** Y: `--target` if given, otherwise the installed game version from `locate_game.py`.
 3. **Check the versions first**: run `${CLAUDE_SKILL_DIR}/scripts/version_gate.py --mod <mod folder> --target <Y> --json`
    (in Codex, the `scripts/` folder of this skill). If it exits 2, print its message to the user as written and stop; run no
