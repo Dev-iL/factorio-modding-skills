@@ -29,9 +29,3 @@ optional, `+` recommended, `~` required without affecting load order, `!` incomp
 
 Mod files are addressed as `__<mod-name>__/path`; base game files as `__base__/graphics/...`.
 The stages and what each can touch are explained in [data-vs-control-stage.md](data-vs-control-stage.md).
-
-## Quirks that cost a run
-
-- A misspelt or unknown prototype property is silently ignored by the game; `check_data.py` reports it (see
-  [in-game-testing.md](in-game-testing.md)).
-- A sprite or icon file that does not exist is not caught by the data stage alone (see [graphics-ladder.md](graphics-ladder.md)).

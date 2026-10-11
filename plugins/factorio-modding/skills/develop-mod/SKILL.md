@@ -14,14 +14,11 @@ from a working environment and a modder's defaults.
 2. Read the manifest. If it has no gate that runs the toolkit's `check_data.py` and `run_tests.py`, note in the final report that
    it was not written by `design-mod` and its gates do not prove the mod loads; carry on without changing the manifest.
 3. Invoke the `manifest-dev:do` skill (Claude Code: `/manifest-dev:do`) with the manifest path and any options the user supplied.
-   Do not restate or reimplement its procedure. In a non-interactive run (`claude -p`) a turn that ends takes the whole run with it, and
+   Do not restate or reimplement its procedure. In a non-interactive run a turn that ends takes the whole run with it, and
    verifier executions that are still running are lost: never end your turn while a verifier or other agent is running; wait for it.
 4. While it runs, apply these defaults when the manifest leaves a choice open:
    - Look every API name up with `api.py lookup` before using it; the installed game version is in `locate_game.py`.
-   - Graphics: rung 1 by default (recolour or compose base-game sprites, preferring the prototype `tint` field); rung 2 (a Blender
-     render of a model you build, `sprites.py render`) only when nothing in the base game looks alike; rung 3 when the user supplied
-     a `.blend`. Never generate images with an AI model and never copy another mod's graphics
-     ([graphics-ladder.md](../factorio-toolkit/references/graphics-ladder.md)).
+   - Graphics: follow [graphics-ladder.md](../factorio-toolkit/references/graphics-ladder.md); rung 1 is the default.
    - Run `check_data.py` after each data-stage change and `run_tests.py` after each runtime change, as you go.
 5. When `manifest-dev:do` finishes, report the mod folder and what was verified. If it ends blocked or escalated, report that
    as it stands.

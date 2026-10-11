@@ -14,7 +14,7 @@ loads like any other sprite; none involves an AI image model. Another mod's grap
 ## Rung 1: reuse, tint, compose
 
 For an entity, keep the base-game file and set `tint` on the layer that should change. Leave the shadow layer alone.
-Copying the whole prototype with `table.deepcopy` keeps the sprite rectangles correct (see [graveyard.md](graveyard.md), item 9):
+Copying the whole prototype with `table.deepcopy` keeps the sprite rectangles correct (see [graveyard.md](graveyard.md), item 5):
 
 ```lua
 local chest = table.deepcopy(data.raw["container"]["wooden-chest"])
@@ -82,8 +82,7 @@ The camera elevation (60 degrees) and the shadow direction are the tool's own ch
 
 `sprites.py render --blend model.blend ...` takes the same options. The tool deletes the file's cameras and lights, uses its own
 (so the look matches rung 2), and samples `--frames` frames evenly from the file's frame range. Orient the model as in rung 2.
-`--save-blend` on a rung 2 run keeps the model, animation baked into keyframes, for a later `--blend` run; both runs produced
-byte-identical sheets in the end-to-end check.
+`--save-blend` on a rung 2 run keeps the model, animation baked into keyframes, for a later `--blend` run.
 
 ## Limits
 
@@ -95,14 +94,8 @@ byte-identical sheets in the end-to-end check.
 
 `sprites.py render` wraps frames after `8192 // frame_width` columns, and refuses with the numbers when a frame is over 4096 or
 the sheet is over 8192 high. Do not use the "2048px normal / 4096px high resolution" single-sprite limit from the same 0.17.0 entry: 2.x has no normal-resolution sprites and the 2.1.21 docs state 4096.
-The end-to-end check exercised single-row sheets only; wrapped sheets follow the documented `line_length` rule and are covered by
-the tool's unit tests, not by a game load.
 
 ## Prove the graphics load
 
-`check_data.py` without `--graphics` passes with a missing file or a wrong rectangle, because `--dump-data` never reads sprites.
-Run `check_data.py --mod <dir> --graphics`: after the data stage it starts the game once more with `--dump-icon-sprites`, which loads
-every sprite of every enabled mod (about 50 s on 2.1.21; a small window opens). A good mod logs `Sprites loaded` and
-`Goodbye` and exits 0. A bad mod logs `Error Util.cpp:81: File __my-mod__/graphics/x.png not found` or
-`... The given sprite rectangle (left_top=0x2000, right_bottom=320x320) is outside the actual sprite size (... 640x1280)`
-and then waits behind an error dialog, which is why the check has a timeout. Both messages were observed on 2.1.21.
+Run `check_data.py --mod <dir> --graphics` (see [in-game-testing.md](in-game-testing.md)): the plain data-stage check never reads
+sprite files, so a missing PNG or an out-of-range sprite rectangle only shows with `--graphics`.

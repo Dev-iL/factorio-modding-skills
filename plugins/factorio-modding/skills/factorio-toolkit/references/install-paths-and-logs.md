@@ -23,8 +23,7 @@ does this and prints the resolved paths; do not guess them.
 The log is `<write-data>\factorio-current.log`: next to the executable's install root on a portable install, and
 `%APPDATA%\Factorio\factorio-current.log` on a system install. The previous launch's log is renamed
 `factorio-previous.log` at the next start (pass `--no-log-rotation` to prevent that). Each launch therefore overwrites the
-log: scan it after the launch you care about, before starting another. Read the log once after the game exits
-(`scan_log.py`); do not tail it.
+log: scan it after the launch you care about, before starting another.
 
 `--dump-data` writes `script-output\data-raw-dump.json` under write-data, and `--dump-data` exits with code 0 on success
 and 1 when the data stage fails.

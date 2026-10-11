@@ -15,12 +15,11 @@ and stop on any failure (it names the fix). The mod gets built later by `develop
 - **Existing mod**: the argument is a folder containing `info.json`, or a name `portal.py info` finds on the portal.
 - **New idea**: anything else.
 
-`--design-doc` writes a design document (below). `--autonomous` is passed through to `figure-out` and `define` and means nobody is
-available to answer: decide with the recommended answer, record the assumption, never stop to ask.
+`--design-doc` writes a design document (below). `--autonomous` is passed through to `figure-out` and `define`.
 
 ## New idea
 
-1. **Search the portal for similar mods** with `portal.py search` using two to four phrasings of the idea. If credentials are
+1. **Search the portal for similar mods** with `portal.py search` using several phrasings of the idea. If credentials are
    missing the script says so and how to set them; say that to the user, then fall back to `portal.py list` filtered by the
    game version and read names and summaries yourself. Keep each similar mod's name, URL (`https://mods.factorio.com/mod/<name>`),
    download count and one line on how it differs. If a result already does the idea, that is the most likely recommendation: say so.

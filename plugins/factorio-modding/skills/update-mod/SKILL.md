@@ -28,7 +28,7 @@ adopt none. `--plan-only` stops after the manifest is written.
    Write a compatibility report listing each change that touches the mod with its `file:line` in the mod, what the change is, and the fix.
    Changes that touch nothing in the mod are not listed.
 6. **Propose gameplay changes**: from the changelog's new features in the target version (its "Features" and "Modding" entries),
-   propose two to five that fit this mod, each scored with the fun, effort and feasibility notes of
+   propose the ones that fit this mod, each scored with the fun, effort and feasibility notes of
    [design-scorecard.md](../factorio-toolkit/references/design-scorecard.md). Adoption is opt-in: ask the user which, if any, to adopt.
    With `--autonomous` or no user present adopt none and record every proposal as a declined option in the manifest.
 7. **Write the manifest**: invoke the `manifest-dev:define` skill (`--autonomous` passed through if given). Required deliverable: the mechanical port

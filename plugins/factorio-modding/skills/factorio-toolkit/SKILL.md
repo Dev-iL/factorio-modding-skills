@@ -9,7 +9,7 @@ user-invocable: false
 A coding agent working on a Factorio mod tends to go wrong in four ways: it writes Lua against a half-remembered API from
 an older Factorio version, it never starts the game so a broken prototype is found by the user, it builds something the mod portal
 already has (or reuses someone's code or art without checking the licence), and it skips graphics or reaches for AI images
-that cannot become a consistent multi-direction sheet. The tools and rules below exist to prevent each of these.
+that cannot become a consistent multi-direction sheet.
 
 ## How to run the scripts
 

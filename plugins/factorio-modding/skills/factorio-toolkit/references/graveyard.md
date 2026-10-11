@@ -2,7 +2,6 @@
 
 Things an agent tends to try and that do not work. Each entry says what fails, the evidence (checked in this project on
 2026-10-10 against Factorio 2.1.21 and the live services unless another source is named), and what to do instead.
-The idea of keeping such a list comes from TalShar783/Factorio-Modding-Skill; the entries are this project's own.
 
 ## 1. Reading a method's `parameters` array in the order the JSON gives
 
@@ -14,39 +13,14 @@ slot. (Methods that take a single table, such as `LuaSurface.can_fast_replace`, 
 affected.) The same holds for event data and prototype properties. Use `api.py lookup`, which prints declared order, or
 sort by `order` yourself.
 
-## 2. Assuming a name that still exists behaves as before
-
-An API diff that only shows removed names misses a method whose signature changed under the same name. In 2.1,
-`LuaEntity.remove_fluid` changed from `{name, amount, ...}` returning the amount removed to `(index, amount)` returning a
-`Fluid`; the old behaviour is now `extract_fluid` (2.1.7 changelog; `api.py diff` shows it as `CHANGED`). Read the
-`CHANGED` lines of the diff as well as `REMOVED`, and see [migration-2.0-to-2.1.md](migration-2.0-to-2.1.md).
-
-## 3. Writing 2.x code from memory of 1.1 or 2.0
+## 2. Writing 2.x code from memory of 1.1 or 2.0
 
 The model's recall of the API is older than the game. Known traps: `global` became `storage` in 2.0 (Storage page);
 `hr_version` was removed from graphics definitions in 2.0 ("The graphics are now always considered to be in high
 definition", `data/changelog.txt` under 2.0.7); recipe `category` became `categories` in 2.1. Look the member up with
 `api.py lookup` for the target version before using it, and run `check_data.py` after every prototype edit.
 
-## 4. Treating a passing data-stage check as proof that graphics load
-
-`--dump-data` does not read sprite files, so a wrong `filename` or sprite size passes it
-(see [in-game-testing.md](in-game-testing.md)). Check the file paths and dimensions separately, and prove the graphics
-by loading the mod in the game.
-
-## 5. Tailing the game log or waiting on a game window
-
-An agent command that never returns blocks the whole session. The game is started with a timeout and without a window,
-and its log is read once, after the process has exited (`scan_log.py`). The game rotates its log on each start unless
-`--no-log-rotation` is given (Command line parameters page), so read the log of the run you just made, not an earlier one.
-
-## 6. Letting a test run use the player's `mods` folder
-
-The player's own mods would load into the test, and the game may rewrite `mod-list.json` in whichever mods folder it is
-pointed at. Tests run with `--mod-directory` pointing at a throwaway folder
-(see [install-paths-and-logs.md](install-paths-and-logs.md)).
-
-## 7. Mod portal calls that look right and quietly are not
+## 3. Mod portal calls that look right and quietly are not
 
 Each of these was observed on live responses from `mods.factorio.com`:
 
@@ -66,7 +40,7 @@ Each of these was observed on live responses from `mods.factorio.com`:
 
 `portal.py` handles each of these.
 
-## 8. Generating sprites with an AI image model
+## 4. Generating sprites with an AI image model
 
 An image model cannot produce the same object from four or eight directions with a consistent shadow, scale and
 animation frames, which a Factorio sprite sheet needs. Jaer985/factorio-modding-skill records that its author tried AI
@@ -74,14 +48,14 @@ icon generation and discarded it (`references/dmr-icon-assets-generation.md`, MI
 generation out; use base-game sprites with a tint, Blender renders of a model built for the task, or art the user
 supplies (see [graphics-ladder.md](graphics-ladder.md)).
 
-## 9. Hard-coding the pixel rectangle of a base-game sprite
+## 5. Hard-coding the pixel rectangle of a base-game sprite
 
 Jaer985/factorio-modding-skill reports (MIT, `references/factorio-2.1-breaking-changes.md`; not reproduced here) that
 copying an assembling machine's sprite rectangle from a clean `data.raw` dump loaded fine on a clean game and failed when
 an overhaul mod replaced or resized the same sheet. Reference the base-game graphics by path with a tint and let the
 engine read their size, or ship your own sprite whose size you control.
 
-## 10. Copying another mod's graphics or code into yours
+## 6. Copying another mod's graphics or code into yours
 
 Not a technical failure but a licensing one: a mod's files belong to its author, and a missing or restrictive licence gives
 you no right to reuse them. See [licensing.md](licensing.md) for what is allowed.
