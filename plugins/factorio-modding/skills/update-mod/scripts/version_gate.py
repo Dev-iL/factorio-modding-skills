@@ -7,7 +7,7 @@
 
 Reads `factorio_version` from the mod's info.json (X, a `major.minor` series such as `2.0`) and compares it with
 the target game version Y (for example `2.1.21`). Exit 0 means the update may proceed; exit 2 means it is refused
-and no analysis should run. A source series is taken to start at its earliest supported release: 2.0 means 2.0.77.
+and no analysis should run. A source series is taken to start at its earliest supported release: 2.0 means 2.0.77 and 2.1 means 2.1.7.
 """
 
 from __future__ import annotations
@@ -23,7 +23,9 @@ from pathlib import Path
 Version = tuple[int, int, int]
 
 MIN_SOURCE: Version = (2, 0, 77)
-SERIES_FLOOR: dict[tuple[int, int], Version] = {(2, 0): MIN_SOURCE}
+# Earliest release of each series with published API JSON on lua-api.factorio.com (2.1.0-2.1.6 answer 404), so the
+# earliest version a diff can start from.
+SERIES_FLOOR: dict[tuple[int, int], Version] = {(2, 0): MIN_SOURCE, (2, 1): (2, 1, 7)}
 
 
 class Refused(Exception):
@@ -70,10 +72,15 @@ def check(source_series: str, target_text: str) -> Verdict:
             "Next step: port the mod to 2.0 by hand first, then run update-mod on the result"
         )
     baseline = SERIES_FLOOR.get((source[0], source[1]), source)
-    if target < baseline:
+    if (target[0], target[1]) < (source[0], source[1]):
         raise Refused(
             f"downgrades are not yet supported: the mod declares Factorio {source_series} and the target is {fmt(target)}. "
             f"Next step: choose a target of {source_series} or newer"
+        )
+    if target < baseline:
+        raise Refused(
+            f"targets older than {fmt(baseline)} are not yet supported: the API documentation for the {source_series} series starts there. "
+            f"Next step: choose {fmt(baseline)} or newer"
         )
     return Verdict(source_series=source_series, source_baseline=baseline, target=target)
 

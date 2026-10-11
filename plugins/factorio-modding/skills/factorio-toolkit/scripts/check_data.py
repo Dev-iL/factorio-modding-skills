@@ -27,7 +27,8 @@ from _lib.sandbox import Sandbox, sandbox
 
 
 def _loaded_mods(log: str) -> set[str]:
-    return set(re.findall(r"Loading mod (\S+) \S+ \(data\.lua\)", log))
+    """Mods the game loaded. A mod without `data.lua` logs no `Loading mod` line, but every loaded mod gets a checksum line."""
+    return set(re.findall(r"Checksum of (\S+): \d+", log))
 
 
 def _check_dump(dump: Path, expected: Sequence[str]) -> tuple[int, list[str]]:

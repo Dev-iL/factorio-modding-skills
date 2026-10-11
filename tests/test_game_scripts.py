@@ -54,6 +54,17 @@ def test_good_mod_passes_the_data_stage_and_exposes_its_prototype(install: GameI
     assert out.startswith("PASS data stage: fms-good 0.1.0")
 
 
+def test_mod_without_data_lua_still_counts_as_loaded(install: GameInstall, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    mod = tmp_path / "fms-control-only"
+    mod.mkdir()
+    (mod / "info.json").write_text(
+        '{"name": "fms-control-only", "version": "0.1.0", "title": "t", "author": "a", "factorio_version": "2.1", "dependencies": ["base"]}', "utf-8"
+    )
+    (mod / "control.lua").write_text("-- runtime only", "utf-8")
+    code, out = run_cli(check_data, ["--mod", str(mod)], capsys)
+    assert code == 0, out
+
+
 def test_missing_expected_prototype_fails(install: GameInstall, capsys: pytest.CaptureFixture[str]) -> None:
     code, out = run_cli(check_data, ["--mod", str(MODS / "fms-good"), "--expect", "item/not-there"], capsys)
     assert code == 1 and "lacks: item/not-there" in out

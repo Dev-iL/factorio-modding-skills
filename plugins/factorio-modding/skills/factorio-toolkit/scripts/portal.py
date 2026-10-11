@@ -48,6 +48,15 @@ def result_line(mod: ModEntry) -> str:
     ).rstrip()
 
 
+def _page_size(text: str) -> int | str:
+    """argparse type: a positive number of results, or `max`."""
+    if text == "max":
+        return text
+    if text.isdigit() and int(text) > 0:
+        return int(text)
+    raise argparse.ArgumentTypeError(f"{text!r} is not a positive number or `max`")
+
+
 def page_lines(page: ModPage) -> list[str]:
     footer = f"# page {page.page}/{page.page_count}: {page.count} mods match, {len(page.results)} shown (page size {page.page_size})"
     return [*(result_line(mod) for mod in page.results), footer]
@@ -117,7 +126,7 @@ def build_parser() -> argparse.ArgumentParser:
     lst.add_argument("--version", help="only mods with a release for this Factorio version, such as 2.0 or 2.1")
     lst.add_argument("--namelist", help="comma-separated internal mod names to fetch (also a quick existence check)")
     lst.add_argument("--page", type=int, default=1)
-    lst.add_argument("--page-size", default="25", help="results per page, or `max` (default 25)")
+    lst.add_argument("--page-size", type=_page_size, default=25, help="results per page, or `max` (default 25)")
     lst.add_argument("--sort", choices=SORT_KEYS, help="the portal sorts by these keys only (not by downloads)")
     lst.add_argument("--sort-order", choices=("asc", "desc"))
     lst.add_argument("--hide-deprecated", action="store_true")
@@ -151,7 +160,7 @@ def run(args: argparse.Namespace, client: httpx2.Client) -> list[str]:
     portal = Portal(client)
     out: list[str] = []
     if args.command == "list":
-        page_size: int | str = args.page_size if args.page_size == "max" else int(args.page_size)
+        page_size: int | str = args.page_size
         namelist = [n.strip() for n in args.namelist.split(",") if n.strip()] if args.namelist else None
         page = portal.list_mods(
             version=args.version, namelist=namelist, page=args.page, page_size=page_size,

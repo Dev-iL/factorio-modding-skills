@@ -58,13 +58,20 @@ def test_two_zero_mod_proceeds_to_2_1_21_with_the_2_0_77_baseline(tmp_path: Path
     assert "diff from 2.0.77" in result.stdout and "target 2.1.21" in result.stdout
 
 
-def test_same_series_update_proceeds(tmp_path: Path) -> None:
-    assert run(make_mod(tmp_path, "2.1"), "2.1.21").returncode == 0
+def test_same_series_update_proceeds_from_the_first_published_2_1_release(tmp_path: Path) -> None:
+    result = run(make_mod(tmp_path, "2.1"), "2.1.21")
+    assert result.returncode == 0 and "diff from 2.1.7" in result.stdout
 
 
-def test_two_zero_mod_cannot_target_below_the_floor(version_gate) -> None:
-    with pytest.raises(version_gate.Refused, match="downgrades are not yet supported"):
-        version_gate.check("2.0", "2.0.7")
+def test_target_below_the_series_floor_is_refused_with_the_floor_named(version_gate) -> None:
+    with pytest.raises(version_gate.Refused, match=r"targets older than 2\.0\.77 are not yet supported"):
+        version_gate.check("2.0", "2.0.50")
+    with pytest.raises(version_gate.Refused, match=r"targets older than 2\.1\.7 are not yet supported"):
+        version_gate.check("2.1", "2.1.3")
+
+
+def test_two_one_mod_gets_the_first_published_baseline(version_gate) -> None:
+    assert version_gate.check("2.1", "2.1.21").source_baseline == (2, 1, 7)
 
 
 def test_bad_input_is_explained(tmp_path: Path, version_gate) -> None:

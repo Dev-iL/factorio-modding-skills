@@ -124,3 +124,10 @@ def test_live_search_with_the_credentials_from_the_environment(capsys: pytest.Ca
 def test_live_unknown_mod_is_a_clear_404() -> None:
     with pytest.raises(ToolkitError, match="was not found"):
         portal.main(["info", "no-such-mod-zzzz-0000"])
+
+
+def test_list_page_size_must_be_a_positive_number_or_max(site: FakePortal, capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as bad:
+        portal.main(["list", "--page-size", "abc"])
+    assert bad.value.code == 2 and "not a positive number or `max`" in capsys.readouterr().err
+    assert "# page" in run(capsys, "list", "--page-size", "max")
