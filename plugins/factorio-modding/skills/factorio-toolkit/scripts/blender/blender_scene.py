@@ -4,7 +4,7 @@
 
 Model contract (rung 2): the model script defines `build()` and, optionally, `animate(t)`.
   - Geometry sits on the z=0 ground plane, centred on the origin, front facing +Y ("north" on screen).
-    Give materials a `diffuse_color`; the Workbench renderer shows exactly that colour, shaded.
+    Give materials a `diffuse_color`; the Workbench renderer uses it as the base colour under fixed studio lighting.
   - `animate(t)` poses the parts for loop position t in [0, 1); frame i of M gets t = i / M. The poses are
     baked into keyframes so a saved .blend replays the same animation (rung 3).
 Rung 3 opens a .blend as-is: the pipeline replaces its cameras and lights and samples its frame range.

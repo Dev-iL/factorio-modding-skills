@@ -9,7 +9,7 @@ import bpy
 
 def material(name, rgb):
     mat = bpy.data.materials.new(name)
-    mat.diffuse_color = (*rgb, 1.0)  # the Workbench renderer shows this colour
+    mat.diffuse_color = (*rgb, 1.0)  # the Workbench renderer uses this as the base colour
     return mat
 
 

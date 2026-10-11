@@ -50,7 +50,7 @@ sprites.py render --model model.py --name rotor --mod-name my-mod --out <mod>/gr
 
 The model script runs inside Blender with `bpy` and defines `build()` and optionally `animate(t)`: geometry on the z=0 ground
 plane, centred on the origin, front facing +Y (north); `t` in [0, 1) is the loop position of each frame. Give materials a
-`diffuse_color`; the fast Workbench renderer shows exactly that colour. The tool renders every direction by turning the model, keeping
+`diffuse_color`; the fast Workbench renderer uses it as the base colour and shades it with fixed studio lighting, so it renders darker than the swatch. The tool renders every direction by turning the model, keeping
 the orthographic camera and the lighting fixed, so all directions are shaded consistently. A second pass flattens the model onto
 the ground along a fixed light direction (`--shadow-x`, `--shadow-y`; right and down on screen) into solid black.
 
@@ -100,10 +100,9 @@ the tool's unit tests, not by a game load.
 
 ## Prove the graphics load
 
-`check_data.py` passes with a missing file or a wrong rectangle, because `--dump-data` never reads sprites. Start the game the
-way a player does, with the mod in the toolkit's sandbox, and let it load every sprite: add `--dump-icon-sprites --window-size 800x600`
-to the game command. On 2.1.21 a good mod loads in about 50 s, the log has `Sprites loaded` and `Goodbye`, and the process exits 0.
-A bad mod logs `Error Util.cpp:81: File __my-mod__/graphics/x.png not found` or
+`check_data.py` without `--graphics` passes with a missing file or a wrong rectangle, because `--dump-data` never reads sprites.
+Run `check_data.py --mod <dir> --graphics`: after the data stage it starts the game once more with `--dump-icon-sprites`, which loads
+every sprite of every enabled mod (about 50 s on 2.1.21; a small window opens). A good mod logs `Sprites loaded` and
+`Goodbye` and exits 0. A bad mod logs `Error Util.cpp:81: File __my-mod__/graphics/x.png not found` or
 `... The given sprite rectangle (left_top=0x2000, right_bottom=320x320) is outside the actual sprite size (... 640x1280)`
-and then waits behind an error dialog, so always run it with a timeout and read the log. Both failure messages were observed on
-2.1.21.
+and then waits behind an error dialog, which is why the check has a timeout. Both messages were observed on 2.1.21.
